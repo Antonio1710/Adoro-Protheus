@@ -15,6 +15,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß 
 @history ticket TI - Antonio Domingos - 23/05/2023 - Ajuste Nova Empresa
+@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 */
  
 User Function F430BXA()    
@@ -45,7 +46,7 @@ User Function F430BXA()
 	//   Alltrim(SE2->E2_TIPO)    == "RJ"
 	   
 	//IF cEmpAnt                  == "01"  .AND. ;	 
-	IF cEmpAnt                  == _cEmpAt1  .AND. ; //ticket TI - Antonio Domingos - 23/05/2023 	 
+	IF alltrim(cEmpAnt) $ _cEmpAt1  .AND. ; //ticket TI - Antonio Domingos - 23/05/2023 	 
 	   Alltrim(SE2->E2_PREFIXO) == "ADR" .AND. ;
 	   Alltrim(SE2->E2_TIPO)    == "RJ"   
 	   

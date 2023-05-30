@@ -12,6 +12,7 @@
 	@history Chamado 66187 - Leonardo P. Monteiro  - 10/01/2022 - Implementação da integração de motoristas estrangeiros que utilizam passaporte ao invés do CPF como identificação.
 	@history Ticket 70142 	- Rodrigo Mello | Flek - 22/03/2022 - Substituicao de funcao PTInternal por FWMonitorMsg MP 12.1.33
 	@history Ticket  77205 - Adriano Savoine  - 27/07/2022- Alterado o Link de dados de DIMEP para DMPACESSO
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 
 USER FUNCTION ADGPE067P(aParam)
@@ -75,7 +76,7 @@ USER FUNCTION ADGPE067P(aParam)
 	Private cEmpDimep          := ''
 	Private nDiaSemana         := 0
 	Private nHoraIni           := 0
-	Private _cEmpAt1           := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 22/05/2023
+	Private _cEmpAt1           := " "
 
 	// ****************************INICIO PARA RODAR COM SCHEDULE**************************************** //	
 	RPCClearEnv()
@@ -85,6 +86,7 @@ USER FUNCTION ADGPE067P(aParam)
 
 	cLinked := GetMV("MV_#RMLINK",,"RM") 
 	cSGBD   := GetMV("MV_#RMSGBD",,"CCZERN_119204_RM_PD")
+	_cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 22/05/2023
 
 	// @history Ticket 70142 	- Rodrigo Mello | Flek - 22/03/2022 - Substituicao de funcao PTInternal por FWMonitorMsg MP 12.1.33
 	//FWMonitorMsg(ALLTRIM(PROCNAME()))
@@ -93,7 +95,7 @@ USER FUNCTION ADGPE067P(aParam)
 	U_ADINF009P(SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))) + '.PRW',SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))),'Integracao com o sistema DIMEP de catracas IntegraÃ§Ã£o de Funcionarios e Caminhoneiros a partir de sql Usando o linked Server para DIMEP')
 	
     logZBN("1") //Log inÃ­cio.
-
+	
 	//IF CEMPANT == '01' 
 	If Alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - William Costa - 22/05/2023 
 		DimepCaminhoneiro() 

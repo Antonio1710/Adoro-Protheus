@@ -12,6 +12,7 @@
 ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 */
 
 User Function MT103COR
@@ -23,7 +24,6 @@ Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas At
 
 //If Alltrim(cEmpAnt) == "01"       //ALTERADO EM 31/03/2015 DEVIDO ERROR.LOG APRESENTADO - CHAMADO 022498
 If Alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - William Costa - 22/05/2023 
-
 
 	aCores  := {	{'Empty(F1_STATUS) .AND. Empty(F1_XFLAGE)'	,'ENABLE'		},;	// NF Nao Classificada
 	{'F1_STATUS=="B"'	,'BR_LARANJA'	},;	// NF Bloqueada

@@ -20,6 +20,7 @@
 	@history ticket 74270 - Fernando Macieira - 06/06/2022 - Criar trava no sistema para impedir lançamentos de titulos vencidos
 	@history ticket 84559 - Antonio Domingos - 09/12/2022 - AVISO DE CODIGO DE BARRAS DUPLICADO E DIVERGENCIA DE VALOR ENTRE BOLETO E TITULO
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa.
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 User Function FA050INC()  
 
@@ -31,7 +32,7 @@ User Function FA050INC()
 	//Local lVencDayOk := GetMV("MV_#E2VENC",,.t.)
 	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
 
-	If cEmpAnt $ _cEmpAt1                  
+	If alltrim(cEmpAnt) $ _cEmpAt1  //ticket TI - Antonio Domingos - 30/05/2023                 
 		If Alltrim(M->E2_CCSOLIC) == "" .and. Alltrim(M->E2_TIPO) == "PA"
 			Alert("CC Solicit deve ser preenchido para o Tipo PA")
 			lRet := .F.

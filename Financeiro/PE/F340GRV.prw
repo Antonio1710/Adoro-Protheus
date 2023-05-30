@@ -31,6 +31,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
 @history ticket TI - Antonio Domingos - 24/05/2023 - Ajuste Nova Empresa
+@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 */
 
 User Function F340GRV()
@@ -50,7 +51,7 @@ User Function F340GRV()
 	
 	//If cEmpAnt <> "01"
 	//If .not. cEmpAnt $ "01 02 "    //Alterado por Adriana em 21/08/2018 para atender empresa CERES - chamado 043263
-	If .not. cEmpAnt $ _cEmpAt2    //ticket TI - Antonio Domingos - 24/05/2023 
+	If .not. alltrim(cEmpAnt) $ _cEmpAt2    //ticket TI - Antonio Domingos - 24/05/2023 
 		Return
 	Endif
 	    if nOpcA = 1 // Ricardo Lima - 14/03/18

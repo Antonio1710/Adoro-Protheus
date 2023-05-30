@@ -36,6 +36,7 @@ Static lProdPF := .f. // @history ticket 86055 - 18/01/2023 - Fernando Macieira 
 	@history ticket 87410 - 26/01/2023 - Fernando Macieira - Tratativas efetuadas para gerar alçada MAPA no processo de cotação também.
 	@history Everson, 13/02/2023, ticket 87842 - Validação uso de OP.
 	@history ticket 94010 - 25/05/2023 - Fernando Macieira - EMPRESAS NOVAS (EMPRESAS 11, 12 E 13) - ITEM CONTÁBIL 221
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 User Function MT120LOK()
 
@@ -88,7 +89,7 @@ User Function MT120LOK()
 	Local cMVItemCta := ""
 	
 	Private lPrjInvest := Left(AllTrim(cCusto),1) == "9"
-
+	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 30/05/2023
 	//Private  lProdPF   := .f. // @history ticket 86055 - 18/01/2023 - Fernando Macieira - Compra de produtos químicos controlados	
 	
 	if cmodulo = "EEC" //Incluido por Adriana para desconsiderar a validacao quando pedido incluido pelo modulo EEC
@@ -104,7 +105,7 @@ User Function MT120LOK()
 	endif
 
 	//Everson - 10/10/2022. Ticket 18465.
-	If cEmpAnt == "01"  .And. lRetorno .And. U_ADCOM42C(CA120FORN, CA120LOJ)
+	If alltrim(cEmpAnt) $ _cEmpAt1  .And. lRetorno .And. U_ADCOM42C(CA120FORN, CA120LOJ) //ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 		lRetorno	:= .F.
 		Help(Nil, Nil, "MT120LOK (MT120LOK)", Nil, "Fornecedor " + cValToChar(CA120FORN) + "/" + cValToChar(CA120LOJ) + " está bloqueado pelo departamento de qualidade.", 1, 0, Nil, Nil, Nil, Nil, Nil, {""})
 
@@ -112,7 +113,7 @@ User Function MT120LOK()
 	//
 	
 	// Validacao incluida em 23/05/2014 - por Adriana - chamado 19220
-	If lRetorno .And. (cEmpAnt == "01" .And. xFilial("SC7") = "03")
+	If lRetorno .And. (alltrim(cEmpAnt) == "01" .And. xFilial("SC7") = "03") //ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 		If Alltrim(acols[n,npcusto]) == "8001" .and. !Empty(cNumSC)
 			nQtdSol := Posicione("SC1",1,xFilial("SC1")+cNumSC+cItemSC,"C1_QUANT")
 			if nQuant <> nQtdSol
@@ -226,7 +227,7 @@ User Function MT120LOK()
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³ Obriga informar o codigo do projeto se o campo Projeto estiver preenchido               ³
 	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-	If cEmpAnt == "01"
+	If alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 		If !Empty( cProjeto ) .And. Empty(cCodProj)
 			Aviso(	"MT120LOK-07",;
 			"Projeto: " + cProjeto + "." + Chr(13) + Chr(10) +;
@@ -1401,7 +1402,7 @@ Static Function ChkZCN()
 	Local cItemSC  := ""
 
 	// Empresas autorizadas
-	If cEmpAnt $ cEmpZCN
+	If alltrim(cEmpAnt) $ cEmpZCN //ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 	
 		cCC := gdFieldGet("C7_CC", n)
 

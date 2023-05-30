@@ -9,6 +9,7 @@
 	@since 29/05/2018
 	@history Ticket 69574   - Abel Bab - 19/04/2022 - Projeto FAI	
 	@history ticket TI - Antonio Domingos - 23/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 	/*/
 User Function F060ABT()
 	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI

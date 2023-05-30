@@ -10,6 +10,7 @@
 	@history Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	@history Ticket TI      - Abel Babini          - 11/07/2022 - Não faz o bloqueio da A1 e A2
 	@history ticket TI - Antonio Domingos - 25/05/2023 - Revisão Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 	/*/
 User Function MT410TRV()
  

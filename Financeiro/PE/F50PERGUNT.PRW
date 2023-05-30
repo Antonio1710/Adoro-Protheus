@@ -11,7 +11,7 @@
 // ---------+-------------------+------------------------------------------------+---------------
 // ##############################################################################################
 //@history ticket TI - Antonio Domingos - 23/05/2023 - Ajuste Nova Empresa
-//@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa..
+//@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa...
 User Function F50PERGUNT
 
 Local cOpc := SuperGetMv( "MV_#F50PER" , .F. , 1  ,  )

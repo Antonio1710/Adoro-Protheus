@@ -24,6 +24,7 @@
 	@history Ticket 69574   - Abel Bab - 21/03/2022 - Projeto FAI
 	@history Everson, 22/03/2023, ticket 90528 - tratamento para não salvar peso zerado na SC5.
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 User Function AD0055()
 
@@ -110,6 +111,7 @@ Return Nil
 	@since 22/05/2002
 	@version 01
 	Static Call(AD0055,GravaPLACA,cPlaca,cCodigo,cDestino,cTipoFrt,cRoteiro,cGuia,dDataEntrega,cDescFrt,.F.,.T.)
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 /*/
 Static Function GravaPLACA(_cPlacPe,_cCod,_cDesti,_cTipoFrt,_cRote,_cGuia,_DtEntr,_cDescFrt,lShowTransp,lAut,cPlcCvMec,cCCDiesel) //Everson - 10/07/2019. //Everson - 01/07/2020. Chamado 059245.
 
@@ -118,13 +120,14 @@ Static Function GravaPLACA(_cPlacPe,_cCod,_cDesti,_cTipoFrt,_cRote,_cGuia,_DtEnt
 	Local   cDescProd   := "" 
 	Local cPedSF		:= "" //Everson - 02/04/2018, chamado 037261.  
 	
-	Local cFilGFrt 		 := Alltrim(SuperGetMv( "MV_#M46F5" , .F. , '' ,  )) //Everson - 31/05/2019. Chamado 044314.
+	//Local cFilGFrt 		 := Alltrim(SuperGetMv( "MV_#M46F5" , .F. , '' ,  )) //Everson - 31/05/2019. Chamado 044314.
 	Local cTpVeiCavM 	 := Alltrim(cValToChar( GetMv("MV_#TPVCVM",,"") )) //Everson - 10/07/2019.
 
-	Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
     Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
-
+	Private _cEmpFLA := SuperGetMv("MV_#EMPFLA",.F.,"0102/0103/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo A //ticket TI - Antonio Domingos - 30/05/2023
+	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 30/05/2023
 	Private _ctipfrt        // Everson - 12/09/2016, chamado 029242.
 	Private _nTotalCx   := 0
 	Private _nTotalPedi := 0
@@ -179,7 +182,8 @@ Static Function GravaPLACA(_cPlacPe,_cCod,_cDesti,_cTipoFrt,_cRote,_cGuia,_DtEnt
 	PutPlaca(_cRote, _dtEntr, _cPlac, _cUFPlaca)
 
 	//Everson - 10/07/2019.
-	If  cEmpAnt $ _cEmpAt1 .And. cFilAnt $ cFilGFrt 
+	//If  cEmpAnt $ _cEmpAt1 .And. cFilAnt $ cFilGFrt 
+	If  alltrim(cEmpAnt)+alltrim(cFilAnt) $ _cEmpFLA //ticket TI - Antonio Domingos - 30/05/2023 
 
 		If Alltrim(cValToChar(_cTipVei)) $(cTpVeiCavM) .And. ! Empty(_cPlac)
 			
@@ -307,7 +311,7 @@ Static Function GravaPLACA(_cPlacPe,_cCod,_cDesti,_cTipoFrt,_cRote,_cGuia,_DtEnt
 	EndIf
 	
 	aAreaSC5 := SC5->( GetArea() ) // @history Fernando Macieira - 22/11/2021 - Ticket 64172 - ADLOG056 - Ajustar troca de placa no SC5 EM LOTE
-	If !IsInCallStack("U_IMPRDNET") .And. IsInCallStack("U_ALTEROTE") .And. !Empty(_cRote) .And. cEmpAnt $ _cEmpAt1 .And. cFilAnt $ cFilGFrt
+	If !IsInCallStack("U_IMPRDNET") .And. IsInCallStack("U_ALTEROTE") .And. !Empty(_cRote) .And. alltrim(cEmpAnt)+alltrim(cFilAnt) $ _cEmpFLA //ticket TI - Antonio Domingos - 30/05/2023 
 		//MsAguarde({|| Static Call(ADLOG049P,recalFrt,_cPlac,_dtEntr,_cRote,cPlcCvMec) },"Aguarde","Verificando frete...")
 		//@history Ticket 70142  - Edvar   / Flek Solution - 23/03/2022 - Substituicao de funcao Static Call por User Function MP 12.1.33
 		MsAguarde({|| u_LOG049A1(_cPlac,_dtEntr,_cRote,cPlcCvMec) },"Aguarde","Verificando frete...")
@@ -701,7 +705,8 @@ Static Function GravaPLACA(_cPlacPe,_cCod,_cDesti,_cTipoFrt,_cRote,_cGuia,_DtEnt
 	
 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	//Everson - 02/04/2018. Chamado 037261.
-	If Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF .And. FindFunction("U_ADVEN050P") .And. ! Empty(cPedSF)
+	//If Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF .And. FindFunction("U_ADVEN050P") .And. ! Empty(cPedSF)
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 .And. FindFunction("U_ADVEN050P") .And. ! Empty(cPedSF) //ticket TI - Antonio Domingos - 30/05/2023 
 		If Upper(Alltrim(cValToChar(GetMv("MV_#SFATUL")))) == "S"
 			cPedSF := Substr(cPedSF,1,Len(cPedSF) -1)
 			U_ADVEN050P("",,," AND C5_NUM IN (" + cPedSF + ") AND C5_XPEDSAL <> '' ",,,,,,.T.)

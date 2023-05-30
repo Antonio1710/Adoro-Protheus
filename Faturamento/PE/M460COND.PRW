@@ -18,12 +18,13 @@
 	@history /Ticket 77755   - Fernando Macieira    - 15/08/2022 - Tratamento nos vencimentos da Filial 0A (São Carlos)
 	@history ticket TI - Antonio Domingos - 20/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 24/05/2023 - Revisão Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 User Function M460COND()
 
 	Local aArea  := {}
 	Local _DtIni := paramixb[1]  
-	Local cMVFil := GetMV("MV_#VENENF",,"01/02/03/0B/0A") // @history /Ticket 77755   - Fernando Macieira    - 15/08/2022 - Tratamento nos vencimentos da Filial 0A (São Carlos)
+	//Local cMVFil := GetMV("MV_#VENENF",,"01/02/03/0B/0A") // @history /Ticket 77755   - Fernando Macieira    - 15/08/2022 - Tratamento nos vencimentos da Filial 0A (São Carlos)
 	Local cMVEmp := GetMV("MV_#VENENE",,"01/13") // @history /Ticket 77755   - Fernando Macieira    - 15/08/2022 - Tratamento nos vencimentos da Filial 0A (São Carlos)
 	Private _cEmpFLC := SuperGetMv("MV_#EMPFLC",.F.,"0102/0103/010B/010A/1301") //Codigos de Empresas+Filiais Ativas Grupo C //ticket TI - Antonio Domingos - 20/05/2023
     
@@ -36,7 +37,8 @@ User Function M460COND()
 
 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	//if xFilial("SC9") $  "02/03/0B	" .and. Alltrim(cEmpAnt)=="01"  //para filial VARZEA //Everson - 14/10/2020. Chamado 2665.
-	If ( AllTrim(FWCodFil()) $ cMVFil .OR. AllTrim(FWxFilial("SC9")) $ cMVFil ) .and. Alltrim(FWCodEmp()) $ cMVEmp // @history /Ticket 77755   - Fernando Macieira    - 15/08/2022 - Tratamento nos vencimentos da Filial 0A (São Carlos)
+	//ticket TI - Antonio Domingos - 30/05/2023 
+	If ( AllTrim(FWCodFil())+AllTrim(FWxFilial("SC9")) $ _cEmpFLC ) .and. Alltrim(FWCodEmp()) $ cMVEmp // @history /Ticket 77755   - Fernando Macieira    - 15/08/2022 - Tratamento nos vencimentos da Filial 0A (São Carlos)
 		_DtIni := iif(Empty(SC9->C9_DTENTR), iif(Empty(SC6->C6_ENTREG), _DtIni, SC6->C6_ENTREG) , SC9->C9_DTENTR)    
 		_DtIni := iif(_DtIni < Date(), Date(), _DtIni)  // por Adriana para não apresentar rejeicao na transmissao da nfe  em 01/08/2018 Chamado 042882
 	endif 

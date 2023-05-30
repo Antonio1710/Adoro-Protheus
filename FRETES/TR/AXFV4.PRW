@@ -31,6 +31,7 @@ Static xPula   := Chr(13) + Chr(10)
 	@history Ticket 85319  - Antonio Domingos - 26/01/2023 - REtirado seek pois ja está posicionado
 	@history Ticket 93281  - Antonio Domingos - 10/05/203 - Erro no cadastro de transportador e motorista no ambiente SAFFEG
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa.
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 
 User Function AXFV4() 
@@ -41,7 +42,7 @@ User Function AXFV4()
 	Local bNoTTs	 := {|| fInteDa()}
 	Private cLinkSe  := "LNKMIMS"  // Fernando SIgoli - Deixar fixo, independete de filial adoro, pois o cadastro sempre integra no edata de VP//Alltrim(SuperGetMV("MV_#UEPSRV",,"LNKMIMS")) //Alltrim(SuperGetMv("MV_#IEDATA",,"[LNKMIMS].[SMART].[dbo]"))
 	Private _CALTER  := "" //Chamado: 047273 //Everson - 26/02/2020. Chamado 053926.
-	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
+	Private _cEmpFLD := SuperGetMv("MV_#EMPFLD",.F.,"0103/0105") //Codigos de Empresas+Filiais Ativas Grupo D //ticket TI - Antonio Domingos - 30/05/2023
 
 	U_ADINF009P(SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))) + '.PRW',SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))),'Cadastro de veiculos')
 
@@ -56,7 +57,7 @@ User Function AXFV4()
 	//aadd(aRotAdic,{ "* Env.Edata"   ,"u_FV4EDATA()", 0 , 7 }) 
 
 	//Everson - 21/02/2020. Chamado 053926.
-	If cEmpAnt $ _cEmpAt1 .And. cFilAnt  $"03/05" //Everson - 26/02/2020. Chamado 053926. //Everson, 18/10/2020, Chamado 18465.
+	If alltrim(cEmpAnt)+alltrim(cFilAnt) $ _cEmpFLD //Everson - 26/02/2020. Chamado 053926. //Everson, 18/10/2020, Chamado 18465.
 
 		Aadd(aButtons,{"Cad Caixas","U_FV4Caixas()","Cad Caixas","Cad Caixas"})
 		Aadd(aButtons,{"Tag Fixa"  ,"U_FV4TGSG()"  ,"Tag Fixa","Tag Fixa"})
@@ -75,13 +76,13 @@ Return Nil
 
 Static Function fInteDa()
 	// *** INICIO CHAMADO
-	Local cEMPIED := SuperGetMv("MV_#EMPIED",.F.,"01")  //Parametro para empresas que integram Edata - ticket 93281 - Antonio Domingos - 10/05/2023
+	Local cEMPIED := SuperGetMv("MV_#EMPIED",.F.,"01/13")  //Parametro para empresas que integram Edata - ticket 93281 - Antonio Domingos - 10/05/2023
 	Default INCLUI := .F.
 	Default ALTERA := .F.
 
 	IF INCLUI .OR. ALTERA
-		
-		If cEmpAnt $ cEMPIED //ticket 93281 - Antonio Domingos - 10/05/2023
+		//ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
+		If alltrim(cEmpAnt) $ cEMPIED //ticket 93281 - Antonio Domingos - 10/05/2023
 			MsAguarde({|| u_FV4EDATA() },"Aguarde","Integrando registro no eData, aguarde...")
 		EndIf
 		grvBarr(Iif(INCLUI, "I", "A"), ZV4->ZV4_PLACA) //Everson, 18/10/2020, Chamado 18465.

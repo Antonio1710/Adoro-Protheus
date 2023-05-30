@@ -22,6 +22,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 @history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 
 USER FUNCTION F240TBOR()
@@ -42,7 +43,7 @@ USER FUNCTION F240TBOR()
 			SE2->E2_DIGCTA := ALLTRIM(POSICIONE("SA2",1,XFILIAL("SA2")+SE2->E2_FORNECE+SE2->E2_LOJA,"A2_DIGCTA"))
 			SE2->E2_NOMCTA := SUBSTR(ALLTRIM(POSICIONE("SA2",1,XFILIAL("SA2")+SE2->E2_FORNECE+SE2->E2_LOJA,"A2_NOME")),1,30)
 			      
-			IF  cEmpAnt $ _cEmpAt1
+			IF  alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 			
 				SE2->E2_CNPJ  :=IF(EMPTY(POSICIONE("SA2",1,XFILIAL("SA2")+SE2->E2_FORNECE+SE2->E2_LOJA,"A2_CPF")),POSICIONE("SA2",1,XFILIAL("SA2")+SE2->E2_FORNECE+SE2->E2_LOJA,"A2_CGC"),POSICIONE("SA2",1,XFILIAL("SA2")+SE2->E2_FORNECE+SE2->E2_LOJA,"A2_CPF"))
 				

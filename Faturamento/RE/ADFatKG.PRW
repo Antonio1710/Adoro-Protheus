@@ -17,6 +17,7 @@
 	@history Ticket 70142  - Edvar / Flek Solution - 06/04/2022 - Retirada de função PUTSX1
 	@history Ticket 80758   - Antonio Domingos     - 29/09/2022 - FAT KG Itapira
 	@history ticket TI - Antonio Domingos - 22/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 	/*/
 User Function ADFatKG()  
 
