@@ -1,0 +1,1834 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TOPCONN.CH"
+
+
+/*/{Protheus.doc} User Function ADGPE087P
+    Tela de movimentação (Entrega/Devolução) de uniformes.
+    @type  Function
+    @author Leonardo P. Monteiro
+    @since 06/02/2022
+    @version version
+    @history Ticket: TI - 06/02/2022 - LEONARDO PINHEIRO MONTEIRO - Desenvolvimento.
+    @history Chamado 16833 - Leonardo P. Monteiro - 08/03/2022- Ajustes e adequações nos fontes conforme novas regras propostas e inconsistências encontradas.
+    @history Chamado 16833 - Leonardo P. Monteiro - 08/03/2022- Ajustes e adequações nos fontes conforme novas regras propostas e inconsistências encontradas.
+    @history Chamado 16833 - Leonardo P. Monteiro - 22/03/2022- Ajustes e correções na rotina no decorrer dos testes reais.
+    @history Chamado 16833 - Leonardo P. Monteiro - 23/03/2022- Correção de error.log seleção em bloco de um grid vazio.
+    @history Ticket: 70990 - ADRIANO SAVOINE - 11/04/2022 - Corrigida a Rotina para que na hora que alterar o Armario Grave quem fez a alteração.
+    @history Chamado 71363 - Everson - 27/04/2022 - Tratamento para filtrar apenas os armários que estão com funcionários demitidos.
+    @history Chamado 72260 - Everson - 02/05/2022 - Tratamento para apagar os dados do armário da tabela ZI1, apenas quando for devolução de armário.
+    @history Chamado 75608 - Everson - 30/06/2022 - Tratamento para devolução de armário.
+    @history Ticket  75797 - Everson - 04/07/2022 - Tratamento para errorlog.
+    @history Ticket  TI    - Everson - 10/01/2023 - Adicionada na coluna com a matrícula do funcionário.
+    @history Ticket  TI    - Everson - 18/01/2023 - Tratamento para liberação de armários.
+    @history Ticket  91079 - William - 14/04/2023 - Tratamento da pesquisa e demitidos do RM.
+/*/
+
+#DEFINE CAMPOS_UNIF_ENTREGA     "ZHH_CODIGO,ZHH_DESCRI,ZHI_UM,TMP_SALDO,ZI5_QTDUNF,ZHK_NUMKIT,ZHI_PRODUT"
+#DEFINE CAMPOS_UNIF_DEVOLUCAO   "ZHO_CODZHH,ZHO_UNDESC,ZHO_UM,ZHO_ENTDAT,ZHO_ENTHOR,ZHO_ENTUSU,ZHO_ENTNOM,ZHO_CODZI5,ZHO_DEDESC,ZHO_PRODUT,REGISTRO"
+#DEFINE CAMPOS_ARMA_DEVOLUCAO   "ZHL_CODIGO,ZHL_DESCRI,ZHL_MSBLQL,ZI1_MAT,REGISTRO" //Everson - 10/01/2023 - Ticket TI.
+
+#DEFINE CONSULTA_UNIF_ENTREGA      1
+#DEFINE CONSULTA_UNIF_DEVOLUCAO    2
+#DEFINE CONSULTA_ARMA_DEVOLUCAO    3 
+
+user function ADGPE087P()
+    
+    Local nAlt              := 0
+    Local nLarg             := 0
+    Local aSize             := {}
+    Local aTabs             := {"Uniformes","Armários"}
+    Local nBot              := 26
+    Local nRight            := 1.9
+    Local nRowIni           := 0
+    Local nColIni           := 0
+    Local nHeiIni           := 0
+    Local nWidIni           := 0
+    Private cColig          := FWFilial('ZI0')
+    Private oP1Pnl01
+    Private oP2Pnl02
+    Private cLegenda
+    Private oWnd
+    Private oLayer
+    Private oPesq
+    Private oL01C01
+    Private oBUnEnt
+    Private oBUnDev
+    Private oBArDev
+    Private oButPesq
+    Private oButConf
+    Private oButFina
+    Private nUnEnCam        := 0
+    Private aUnEnCab        := {}
+    Private aUnEnCam        := {}
+    Private aUnEnDad        := {}
+    Private nUnDeCam        := 0
+    Private aUnDeCab        := {}
+    Private aUnDeCam        := {}
+    Private aUnDeDad        := {}
+    Private nArDeCam        := 0
+    Private aArDeCab        := {}
+    Private aArDeCam        := {}
+    Private aArDeDad        := {}
+    Private nBrwFocused     := 0
+    Private oTBitmap
+    Private oZI1MAT
+    Private cZI1MAT         := Space(40)
+    Private oZI1CRE
+    Private cZI1CREDEN      := Space(40)
+    Private oZI1NOM
+    Private cZI1NOME        := Space(40)
+    Private oZI1SECAO
+    Private cZI1SECAO       := Space(100)
+    Private oTCAMPA
+    Private cZI1TCAMPA      := Space(06)
+    Private oTBLUTE
+    Private cZI1TBLUTE      := Space(06)
+    Private oTJALEC
+    Private cZI1TJALEC      := Space(06)
+    Private oTCALPA
+    Private cZI1TCALPA      := Space(06)
+    Private oTCALTE
+    Private cZI1TCALTE      := Space(06)
+    Private oTCALCA
+    Private cZI1TCALCA      := Space(06)
+    Private oTMEIAS
+    Private cZI1TMEIAS      := Space(06)
+    Private oARMARIO
+    Private cZI1CODZHL      := Space(06)
+    Private cPesq           := Space(100)
+    Private cAlerta         := ""
+    Private oAlerta
+    Private aTamObj         := {}
+    Private bMudaAba	    := {|| fMudaaba() }
+    Private bF6             := {|| fGetDados(.T.,.F.), oARMARIO:setFocus() }
+    Private bF7             := {|| fConfirm(), fGetDados(.F.,.T.), oPesq:setFocus() }
+    Private bF8             := {|| oWnd:End()          }
+    Private bF9             := {|| oPesq:setFocus()    }
+    Private bRelArm         := {|| U_ADGPE089R() }
+    Private bF11            := {|| devArm(aArDeDad) }
+    Private bF10            := {|| fGetArma() }
+    Default cTitle          := "..:: Tela de Entrega e Devolução de Uniformes ::.."
+
+    cLayCSS := "QFrame{ margin-top: 15px; } TButton{ margin-bottom: 7px; } TSay{ margin-bottom: 7px; margin-top: 7px; }"    
+    
+    cBtnCss := " QFrame{ margin: 7px; } "
+    cBtnCss += " QPushButton {"
+	cBtnCss += "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FDFDFD, stop:1 #E7E7E7);"
+	cBtnCss += "    border-radius: 08px;"
+	cBtnCss += "    border: 1px solid #D8D8D8;"
+	cBtnCss += "    font: bold 10em;"
+	cBtnCss += "}"
+	cBtnCss += " QPushButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FCFCFC, stop:1 #C7CBCC); }"
+	cBtnCss += " QPushButton:pressed {"
+	cBtnCss += "    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #C7CBCC, stop:1 #FCFCFC);"
+	cBtnCss += "}"
+    
+    if type("cFilAnt") == "U"
+        //RpcsetType(3)
+        //Rpcsetenv("01","02","LEONARDO_MONTEIRO","")
+        nAlt    := GetScreenRes()[02]*0.965
+        nLarg   := GetScreenRes()[01]
+    else
+        aSize   := MsAdvSize(.T.)
+        nAlt    := aSize[06]
+        nLarg   := aSize[05]
+    endif
+    
+    oWnd            := Msdialog():Create()
+    oWnd:cTitle     := cTitle
+    ownd:nWidth     := nLarg
+    oWnd:nHeight    := nAlt
+    oWnd:lMaximized := .T.
+    oWnd:SetCSS("QWidget{ font: bold 15px; } TTabs{ margin: 0px; } ")
+
+    oLayer := FWLayer():new()
+    
+    oLayer:init(oWnd,.F.)
+    oLayer:opanel:nHeight    := nAlt*1.01
+    //oLayer:opanel:nHeight    := nAlt*1.01
+    //oLayer:opanel:nHeight    := nAlt
+    oLayer:addLine("LMAIN",100, .F.)
+    oLayer:addCollumn("CMAIN", 100, .F., "LMAIN")
+    oLMain  := oLayer:getColPanel("CMAIN","LMAIN")
+    
+    oSize := FWDefSize():New(.F.)
+	oSize:AddObject( "FOLDER"	, 100, 100, .T., .T. )
+	
+	oSize:lLateral	:= .T. // Elementos um do lado do outro
+	oSize:lProp		:= .T. // Cálculo dos botões proporcionais
+	oSize:SetWindowSize({000, 000, oLMain:nHeight, oLMain:nWidth})
+	oSize:Process() 		// executa os calculos
+
+    oTTabs := TTabs():New(oSize:GetDimension("FOLDER","LININI"),;
+                          oSize:GetDimension("FOLDER","COLINI"),;
+                          aTabs,Nil,oLMain,Nil,CLR_HRED,Nil,.T.,Nil,;
+                          oSize:GetDimension("FOLDER","XSIZE")+001,;
+                          oSize:GetDimension("FOLDER","YSIZE")+012)
+    oTTabs:SetOption(1)
+
+    U_DefTamObj(@aTamObj,001,001,(oTTabs:nClientHeight / 2)-nBot,(oTTabs:nClientWidth / 2)-nRight)
+
+    nRowIni     := aTamObj[1]
+    nColIni     := aTamObj[2]
+    nHeiIni     := aTamObj[3]
+    nWidIni     := aTamObj[4]
+
+    fPainel1(nRowIni, nColIni, nHeiIni, nWidIni)
+    fPainel2(nRowIni, nColIni, nHeiIni, nWidIni)
+    
+    oTTabs:SetOption(1)
+    oTTabs:bAction := bMudaAba
+	Eval(bMudaAba)
+
+    oPesq:setFocus()
+    oWnd:Activate()
+
+return
+
+Static Function fPainel1(nRow, nCol, nHeight, nWidth)
+    
+    oP1Pnl01 := TPanel():New(nRow,nCol,'',oTTabs,,,,,,nWidth,nHeight,,.T.)
+    oP1Pnl01:lVisibleControl  := .F.
+
+    oCoLay01 := FWLayer():new()
+    oCoLay01:init(oP1Pnl01,.T.)
+
+    oCoLay01:addLine("L01",15, .F.)
+    oCoLay01:addCollumn("L01C01", 100, .F., "L01")
+  
+    oCoLay01:addLine("L02",85, .F.)
+    oCoLay01:addCollumn("L02C01", 070, .F., "L02")
+    oCoLay01:addCollumn("L02C02", 030, .F., "L02")
+
+    oCoLay01:addWindow("L02C01", "Win01", "Uniformes para Entrega"    , 050,.F.,.F.,{||"" },"L02",{||""})
+    oCoLay01:addWindow("L02C01", "Win03", "Uniformes para Devolução"  , 050,.F.,.F.,{||"" },"L02",{||""})
+
+    oCoLay01:addWindow("L02C02", "Win02", "Dados do Colaborador"		, 100,.F.,.F.,{||"" },"L02",{||""})
+
+    oL01C01 := oCoLay01:getColPanel("L01C01", "L01")
+    oSize := FWDefSize():New(.F.)
+	
+    oSize:AddObject( "OBJ01"	, 50, 50, .T., .T. )
+    oSize:AddObject( "OBJ02"	, 30, 50, .T., .T. )
+    oSize:AddObject( "OBJ03"	, 10, 50, .T., .T. )
+    oSize:AddObject( "OBJ04"	, 10, 50, .T., .T. )
+    oSize:AddObject( "OBJ05"	, 10, 50, .T., .T. )
+	oSize:lLateral	:= .T. // Elementos um do lado do outro
+	oSize:lProp		:= .T. // Cálculo dos botões proporcionais
+	oSize:SetWindowSize({000, 000, oL01C01:nHeight, oL01C01:nWidth})
+	oSize:Process() 		// executa os calculos
+
+    // Layout pesquisa
+    layPesq(nRow, nCol, nHeight, nWidth)
+    
+    // Layout listagem
+    layList(nRow, nCol, nHeight, nWidth)
+
+RETURN
+
+Static Function fPainel2(nRow, nCol, nHeight, nWidth)
+
+    //Variáveis.
+    Local oARMARIO := Nil
+    Local cArmPesq := Space(TamSX3("ZI1_CODZHL")[1])
+
+    oP2Pnl02 := TPanel():New(nRow,nCol,'',oTTabs,,,,,,nWidth,nHeight,,.T.)
+    oP2Pnl02:lVisibleControl  := .F.
+
+    oP2Lay02 := FWLayer():new()
+    oP2Lay02:init(oP2Pnl02,.T.)
+
+    oP2Lay02:addLine("L01",80, .F.)
+    oP2Lay02:addCollumn("L01C01", 100, .F., "L01")
+    oP2Lay02:addWindow("L01C01", "Win01", "Armários liberados para inspeção"    , 100,.F.,.F.,{||"" },"L01",{||""})
+
+    oP2Lay02:addLine("L02",20, .F.)
+    oP2Lay02:addCollumn("L02C01", 100, .F., "L02")
+    oP2Lay02:addWindow("L02C01", "Win02", "Ações"		, 100,.F.,.F.,{||"" },"L02",{||""})
+
+    //oP2Lay02:show()
+
+    //-------------------------------------------------------------------
+    // Opções, botões com ações do painél
+    //-------------------------------------------------------------------
+
+    oP2Win01    := oP2Lay02:GetWinPanel("L01C01","Win01","L01")
+
+    oBArDev     := FWBrowse():New(oP2Win01)
+    
+    aArDeCab	:= getCampos(CONSULTA_ARMA_DEVOLUCAO)
+    aArDeDad    := getDadoBRW(CONSULTA_ARMA_DEVOLUCAO)
+
+    oBArDev:bGotFocus := {|| nBrwFocused := CONSULTA_ARMA_DEVOLUCAO}
+    oBArDev:addMarkColumns({|oBmark| fMark(oBMark, CONSULTA_ARMA_DEVOLUCAO)},; 
+                           {|oBMark| fDblClk(oBmark, CONSULTA_ARMA_DEVOLUCAO) /*Função DoubleClick*/ },; 
+                           {|oBmark| /* fHeaClk(oBmark, CONSULTA_UNIF_ENTREGA) Função de HEADERCLICK*/})
+    
+    oBArDev:setColumns(aArDeCab)
+	oBArDev:setDataArray()
+	oBArDev:disableReport()
+	oBArDev:disableConfig()
+    
+    oBArDev:setArray(aArDeDad)
+    oBArDev:Activate()
+
+    //-------------------------------------------------------------------
+    // Opções, botões com ações do painél
+    //-------------------------------------------------------------------
+
+    oP2Win02    := oP2Lay02:GetWinPanel("L02C01","Win02","L02")
+    oSize := FWDefSize():New(.F.)
+	
+    oSize:AddObject( "OBJ01"	, 55, 50, .T., .T. )
+    oSize:AddObject( "OBJ02"	, 15, 50, .T., .T. )
+    oSize:AddObject( "OBJ03"	, 15, 50, .T., .T. )
+    oSize:AddObject( "OBJ04"	, 15, 50, .T., .T. )
+	oSize:lLateral	:= .T. // Elementos um do lado do outro
+	oSize:lProp		:= .T. // Cálculo dos botões proporcionais
+	oSize:SetWindowSize({000, 000, oP2Win02:nHeight, oP2Win02:nWidth})
+	oSize:Process() 		// executa os calculos
+
+    oARMARIO  := TGet():New(2,oSize:GetDimension("OBJ01","COLINI"),{|u|If(PCount() == 0, cArmPesq, cArmPesq := u)}, oP2Win02,oSize:GetDimension("OBJ01","YSIZE"),010,"", {|| bscArm(cArmPesq) },0,16777215,,.F.,,.T.,,.F.,{|| .T. },.F.,.F.,,.F.,.F. ,,"cArmPesq",,,,.T.,,,"Pesquisar Armário",1) 
+
+    oButRelArm := TButton():New( 2, oSize:GetDimension("OBJ02","COLINI"), "Rel. Armário", oP2Win02, bRelArm,;
+    oSize:GetDimension("OBJ02","XSIZE"),oSize:GetDimension("OBJ02","YSIZE")-02,,,.F.,.T.,.F.,,.F.,,,.F. )
+    
+    oButAtual := TButton():New( 2, oSize:GetDimension("OBJ03","COLINI"), "Atualiza [F10]", oP2Win02, bF10,;
+    oSize:GetDimension("OBJ03","XSIZE"),oSize:GetDimension("OBJ03","YSIZE")-02,,,.F.,.T.,.F.,,.F.,,,.F. )
+
+    oButConAr := TButton():New( 2, oSize:GetDimension("OBJ04","COLINI"), "Confirmar[11]", oP2Win02, bF11,; //Everson, 30/06/2022, ticket 75608.
+    oSize:GetDimension("OBJ04","XSIZE"),oSize:GetDimension("OBJ04","YSIZE")-02,,,.F.,.T.,.F.,,.F.,,,.F. )
+    
+    SetKey( VK_F10,  bF10 )
+    SetKey( VK_F11,  bF11 )
+
+return
+
+/*/{Protheus.doc} User Function bscArm
+    Rotina para devolver armário de funcionário demitido.
+    @type  Static Function
+    @author Everson
+    @since 30/06/2022
+    @version 01
+/*/
+
+Static Function bscArm(cArmPesq)
+
+    //Variáveis.
+    Local aArea   := GetArea()
+    Local cQuery  := ""
+    Local cMsg    := "Armário livre para uso."
+
+    Default cArmPesq := ""
+
+    If Empty(cArmPesq)
+        RestArea(aArea)
+        Return .T.
+
+    EndIf
+
+    If ! Existcpo("ZHL", cArmPesq)
+        MsgInfo("Armário " + cValToChar(cArmPesq) + " não localizado.", "Função bscArm(ADGPE087P)")
+        RestArea(aArea)
+        Return .T.
+
+    EndIf
+
+    cQuery := " SELECT * FROM " + RetSqlName("ZI1") + " AS ZI1 WHERE ZI1_FILIAL = '" + FWxFilial("ZI1") + "' AND ZI1_CODZHL = '" + cArmPesq + "' AND ZI1.D_E_L_E_T_ = '' "
+
+    If Select("D_ARMPSQ") > 0
+        D_ARMPSQ->(DbCloseArea())
+
+    EndIf
+
+    TcQuery cQuery New Alias "D_ARMPSQ"
+    DbSelectArea("D_ARMPSQ")
+    If ! D_ARMPSQ->(Eof())
+        
+        cMsg := "Armário sendo utilizado por: " + D_ARMPSQ->ZI1_MAT + " " + Alltrim(cValToChar(D_ARMPSQ->ZI1_NOME))
+
+    EndIf
+    D_ARMPSQ->(DbCloseArea())
+
+    MsgInfo(cMsg, "Função bscArm(ADGPE087P)")
+
+    RestArea(aArea)
+
+Return .T.
+
+/*/{Protheus.doc} User Function devArm
+    Rotina para devolver armário de funcionário demitido.
+    @type  Static Function
+    @author Everson
+    @since 30/06/2022
+    @version 01
+/*/
+
+Static Function devArm(aArDeDad)
+
+    //Variáveis.
+    Local aArea   := GetArea()
+    Local nAux    := 1
+
+    For nAux := 1 To Len(aArDeDad)
+        
+        If aArDeDad[nAux, 6] //Everson - 18/01/2023 - Ticket TI.
+            fConfArm(.T., aArDeDad[nAux, 1])
+
+        EndIf
+
+    Next
+    
+    fGetArma()
+
+    RestArea(aArea)
+
+Return Nil
+
+Static Function fGetArma()
+
+    aArDeDad    := getDadoBRW(CONSULTA_ARMA_DEVOLUCAO)
+    oBArDev:setArray(aArDeDad)
+
+    oBArDev:refresh()
+
+return
+
+Static Function fConfArm(lDevolv, cCodigo) //Ticket 72260 - Everson - 02/05/2022. //Everson, 30/06/2022, ticket 75608.
+
+    Local cQuery  := ""
+    Local nRegist := 0
+
+    Default cCodigo := ZI1->ZI1_CODZHL //Everson, 30/06/2022, ticket 75608.
+
+    Default lDevolv := .F. //Ticket 72260 - Everson - 02/05/2022
+    
+    DbSelectArea("ZHL")
+    cQuery := " SELECT R_E_C_N_O_ REGISTRO "
+    cQuery += " FROM "+ RetSqlName("ZHL") +" "
+    cQuery += " WHERE D_E_L_E_T_='' AND ZHL_CODIGO ='"+ cCodigo +"'; "
+
+    TcQuery cQuery ALIAS "QZHL" NEW
+    
+    nRegist := QZHL->REGISTRO
+  
+    //Ticket: 70990 - ADRIANO SAVOINE - 11/04/2022 
+   
+    IF nRegist > 0
+        DbSelectArea("ZHL")
+        ZHL->(Dbgoto(nRegist))
+
+        if ZHL->(Recno()) == nRegist
+
+            cQuery := " SELECT R_E_C_N_O_ REGISTRO "
+            cQuery += " FROM "+ RetSqlName("ZI1") +" "
+            cQuery += " WHERE D_E_L_E_T_='' AND ZI1_CODZHL='"+ ZHL->ZHL_CODIGO +"'; "
+
+            TcQuery cQuery ALIAS "QZI1" NEW
+
+            if QZI1->(!EOF())
+                DbSelectArea("ZI1")
+                ZI1->(DBGOTO(QZI1->REGISTRO))
+
+                if ZI1->(Recno()) == QZI1->REGISTRO
+
+                    //Everson - 27/04/2022. Chamado 71636.
+                    If lDevolv //Ticket 72260 - Everson - 02/05/2022
+                        RecLock("ZI1", .F.)
+                            ZI1_CODZHL  := ""
+                        ZI1->(MsUnlock())
+
+                    EndIf
+
+                    DbSelectArea("ZHP")
+
+                    // Registra no histórico.
+                    RecLock("ZHP", .T.)
+                        ZHP_FILIAL  := xFilial("ZHP")
+                        ZHP_CODZHL  := ZHL->ZHL_CODIGO
+                        ZHP_MAT     := ZI1->ZI1_MAT
+                        ZHP_NOME    := ZI1->ZI1_NOME
+                        ZHP_DATINC  := Date()
+                        ZHP_HORINC  := Time()
+                        ZHP_USUARI  := AllTrim( __cUserID )
+                        ZHP_NOMUSU  := AllTrim(UsrRetName(__cUserID))
+                    ZHP->(MsUnlock())
+
+                endif
+
+                ZHP->(Dbclosearea())
+                ZI1->(Dbclosearea())
+            endif
+
+            QZI1->(Dbclosearea())
+
+        endif
+    endif
+    QZHL->(Dbclosearea())
+
+return 
+
+Static Function layPesq(nRow, nCol, nHeight, nWidth)
+
+    //**************************************************
+    // Sessão de filtros.
+    //**************************************************
+    
+    oPesq:= TGet():New(002,oSize:GetDimension("OBJ01","COLINI"),{|u|If(PCount() == 0, cPesq, cPesq := u)},oL01C01,oSize:GetDimension("OBJ01","XSIZE"),020,"", {|| fValida("cPesq") },0,16777215,,.F.,,.T.,,.F.,{|| .T. },.F.,.F.,,.F.,.F. ,,"cPesq",,,,.T.,,,"Pesquisar Matrícula/Credencial/Nome ",1) 
+    oPesq:SetCSS("QLineEdit{font-size: 20px; width: 90%;}")
+    oPesq:lVisibleControl := .T.
+   
+    oAlerta := TSay():New(oSize:GetDimension("OBJ02","LININI"),;
+                    oSize:GetDimension("OBJ02","COLINI"),;
+                    {|| "Mensagens e Alertas:"+chr(13)+chr(10)},oL01C01,,,,,,.T.,CLR_RED,CLR_WHITE,;
+                    oSize:GetDimension("OBJ02","XSIZE"),oSize:GetDimension("OBJ02","YSIZE"))
+    oAlerta:CtrlRefresh()
+    oAlerta:lTransparent = .T.
+    oAlerta:lWordWrap = .T.
+
+    oButPesq := TButton():New( 2, oSize:GetDimension("OBJ03","COLINI"), "Pesquisar [F6]", oL01C01, bF6,;
+    oSize:GetDimension("OBJ03","XSIZE"),oSize:GetDimension("OBJ03","YSIZE")-02,,,.F.,.T.,.F.,,.F.,,,.F. )
+
+    oButConf := TButton():New( 2, oSize:GetDimension("OBJ04","COLINI"), "Confirmar [F7]", oL01C01, bF7,;
+    oSize:GetDimension("OBJ04","XSIZE"),oSize:GetDimension("OBJ04","YSIZE")-02,,,.F.,.T.,.F.,,.F.,,,.F. )
+    
+    oButFina := TButton():New( 2, oSize:GetDimension("OBJ05","COLINI"), "Finalizar [F8]", oL01C01, bF8,;
+    oSize:GetDimension("OBJ05","XSIZE"),oSize:GetDimension("OBJ05","YSIZE")-02,,,.F.,.T.,.F.,,.F.,,,.F. )
+
+    SetKey( VK_F6,  bF6 )
+    SetKey( VK_F7,  bF7 )
+    SetKey( VK_F8,  bF8 )
+    SetKey( VK_F9,  bF9 )
+
+return
+
+Static Function fMudaAba()
+
+    oP1Pnl01:lVisibleControl      := (oTTabs:nOption == 1)
+    oP2Pnl02:lVisibleControl      := (oTTabs:nOption == 2)
+
+return
+
+// Ticket: 16835 - 28/10/2021 - ADRIANO SAVOINE
+STATIC FUNCTION fValida(cCampo)
+
+    Local lRet      := .T.
+    Local cField    := ""
+
+    
+    if cCampo == "cPesq"
+        fGetDados()
+    
+    elseif !Empty(cZI1MAT)
+
+        if  (cCampo == "cZI1TCAMPA";
+            .OR. cCampo == "cZI1TBLUTE";
+            .OR. cCampo == "cZI1TCALPA";
+            .OR. cCampo == "cZI1TCALTE";
+            .OR. cCampo == "cZI1TCALCA";
+            .OR. cCampo == "cZI1TMEIAS";
+            .OR. cCampo == "cZI1TJALEC")
+        
+            if cCampo == "cZI1TCAMPA"
+                cChave := "01"
+                cField := "ZI1_TCAMPA"
+            elseif cCampo == "cZI1TBLUTE"
+                cChave := "02"
+                cField := "ZI1_TBLUTE"
+            elseif cCampo == "cZI1TCALPA"
+                cChave := "03"
+                cField := "ZI1_TCALPA"
+            elseif cCampo == "cZI1TCALTE"
+                cChave := "04"
+                cField := "ZI1_TCALTE"
+            elseif cCampo == "cZI1TCALCA"
+                cChave := "05"
+                cField := "ZI1_TCALCA"
+            elseif cCampo == "cZI1TMEIAS"
+                cChave := "06"
+                cField := "ZI1_TMEIAS"
+            elseif cCampo == "cZI1TJALEC"
+                cChave := "07"
+                cField := "ZI1_TJALEC"
+            endif
+
+            cValor := &(cCampo)
+                
+            if (vazio() .OR. Existcpo("ZHJ",cChave+cValor,2))
+                fGrvZI1(cZI1MAT, cField, cValor)
+            endif
+            
+            fGetDados(.F.,.F.,.F.)
+
+        elseif cCampo == "cZI1CODZHL"
+        
+            cField := "ZI1_CODZHL"
+            cValor := &(cCampo)
+
+            if fVldArm()
+                fGrvZI1(cZI1MAT, cField, cValor)
+            endif
+            fConfArm(.F.) //Ticket 72260 - Everson - 02/05/2022
+        endif
+
+    endif
+
+    
+RETURN lret
+
+Static Function fGrvZI1(cZI1MAT, cCampo, cValor)
+
+    Local lRet      := .T.
+    Local cQuery    := ""
+
+    if !Empty(cZI1MAT)
+        cQuery := " SELECT R_E_C_N_O_ REGISTRO FROM "+ retsqlname("ZI1") +" WHERE D_E_L_E_T_='' AND ZI1_MAT!='' AND ZI1_MAT='"+ cZI1MAT +"'; "
+
+        Tcquery cQuery ALIAS "QZI1" NEW
+
+        if QZI1->(!EOF())
+            DbSelectarea("ZI1")
+            ZI1->(Dbgoto(QZI1->Registro))
+
+            if QZI1->registro == ZI1->(Recno())
+                if Alltrim(&("ZI1->"+Alltrim(cCampo)) ) != Alltrim(cValor)
+                    if reclock("ZI1",.F.)
+                        &("ZI1->"+Alltrim(cCampo))   := cValor
+                        ZI1->(MsUnlock())
+                    endif
+                endif
+            endif
+
+        endif
+
+        if select("QZI1") > 0
+            QZI1->(Dbclosearea())
+        endif
+    endif
+    
+return lRet
+        
+
+Static Function fVldArm()
+
+    Local lRet := .T.
+    // Posiciona no registro do uniforme vinculado ao departamento.
+    
+    cZI1CODZHL  := Alltrim(cZI1CODZHL)
+    cZI1MAT     := Alltrim(cZI1MAT)
+
+    IF !Empty(cZI1CODZHL)
+        cQuery := " SELECT ZI1_MAT, ZI1_NOME "
+        cQuery += " FROM "+ RetSqlName("ZI1") +" (NOLOCK) "
+        cQuery += " WHERE D_E_L_E_T_='' AND ZI1_MAT !='"+ cZI1MAT +"' AND ZI1_CODZHL='"+ cZI1CODZHL +"'; "
+        
+        Tcquery cQuery ALIAS "QZHL" NEW
+
+        if QZHL->(!EOF())
+            lRet := .F.
+            //Help( ,, 'HELP',, 'Armário já vinculado ao colaborador '+ Alltrim(QZHL->ZI1_MAT) +'-'+ Alltrim(QZHL->ZI1_NOME) +'!.', 1, 0)
+            fAlerta('Armário já vinculado ao colaborador '+ Alltrim(QZHL->ZI1_MAT) +'-'+ Alltrim(QZHL->ZI1_NOME) +'!.')
+        ELSE
+            fAlerta("")
+            lRet := .T.
+        endif
+
+        QZHL->(DBCLOSEAREA())
+    endif
+
+RETURN lRet
+
+Static Function fAlerta(cMsn)
+
+    oAlerta:setText("Mensagens e Alertas:"+chr(13)+chr(10)+cMsn)
+    oAlerta:refresh()
+
+    // *** INICIO William Costa - 03/04/2023 - Ticket 91079 item 4 - Após realizar a entrega / devolução a caixa de dialogo confirmando não aparece
+    if alltrim(cMsn) <> ''
+
+        MSGALERT(cMsn, 'ADGPE087P' )
+
+    endif
+    // *** FINAL William Costa - 03/04/2023 - Ticket 91079 item 4 - Após realizar a entrega / devolução a caixa de dialogo confirmando não aparece
+
+return
+
+Static Function fConfirm()
+
+    Private aZI1SECAO     := {}
+    Private cUUID         := FWUUIDV4()
+    
+    aZI1SECAO   := Separa(cZI1SECAO,"-")
+
+    //ZHH_CODIGO,ZHH_DESCRI,ZHI_UM,ZI5_QTDUNF,ZHK_NUMKIT
+    DbSelectArea("ZI0")
+    
+    if !Empty(cZI1MAT) .and. !Empty(cZI1SECAO)
+        if fVldEnv()
+            // Processa a entrega.
+            fEntrega()
+        endif
+
+        // Processa a devolução.
+        fDevolucao()
+
+    endif
+    
+return
+
+Static function fVldEnv()
+
+    Local nA            := 0
+    Local nCont         := 0
+    Local nCont2        := 0
+    Local nColuna       := 0
+    Local lRet          := .T.
+    Local nUnEnDad      := Len(aUnEnDad)
+    Local nUnDeDad      := Len(aUnDeDad)
+    Local nPosCodUni    := aScan(aUnEnCam,"ZHH_CODIGO")
+    //Local nPosZHIUM     := aScan(aUnEnCam,"ZHI_UM")
+    //Local nPosProdut    := aScan(aUnEnCam,"ZHI_PRODUT")
+    Local nPosSaldo     := aScan(aUnEnCam,"TMP_SALDO")
+    Local nPosCodZHH    := aScan(aUnDeCam,"ZHO_CODZHH")
+    Local nPosEntDat    := aScan(aUnDeCam,"ZHO_ENTDAT")
+    Local aValid        := {}
+    
+    if nUnEnDad > 0
+        
+        nColuna     := Len(aUnEnDad[1])-1
+
+        for nA := 1 To nUnEnDad
+            if aUnEnDad[nA, nColuna]
+                cProd       := aUnEnDad[nA, nPosCodUni]
+                nSaldo      := aUnEnDad[nA, nPosSaldo]
+                
+                nLin        := aScan(aValid, {|x| x[1] == cProd})
+
+                if nLin == 0
+                    AADD(aValid, {cProd,nSaldo})
+                else
+                    aValid[nA][02] += nSaldo
+                endif
+            endif
+        next nA
+    endif
+
+    if nUnDeDad > 0
+
+        nColuna     := Len(aUnDeDad[1])-1
+
+        for nA := 1 To nUnDeDad
+            if aUnDeDad[nA, nColuna]
+                cProd       := aUnDeDad[nA, nPosCodZHH]
+                nLin        := aScan(aValid, {|x| x[1] == cProd})
+                
+                if nLin > 0
+                    aValid[nLin][2] += 1
+                endif
+            elseif aUnDeDad[nA, nPosEntDat] < Date()
+                fAlerta("Existem itens pendentes de devolução em dias anteriores!")
+                lRet := .F.    
+            endif
+        next nA
+    endif
+
+    nValid  := Len(aValid)
+    for nA := 1 to nValid
+        if aValid[nA][02] < 1
+            fAlerta("Não existe saldo para o produto '"+ Alltrim(aValid[nA][01]) +"'.")
+            lRet := .F.
+        endif
+    next nA
+
+    // *** INICIO William Costa - 03/04/2023 - Ticket 91079 item 1 - sistema deixa realizar entrega de peças mesmo não sendo realizado a devolução das outras
+    if nUnDeDad > 0 .AND. lRet == .T. //só entra se tiver item a devolver
+
+        for nCont := 1 to Len(aUnEnDad)
+
+            if aUnEnDad[nCont][8]  == .T. //significa que o item está marcado
+
+                for nCont2 := 1 to Len(aUnDeDad)
+
+                    if alltrim(aUnEnDad[nCont][1])  == alltrim(aUnDeDad[nCont2][1]) //significa que o mesmo produto marcado, é o mesmo produto que falta devolver aí não pode, tem que travar
+
+                        fAlerta("Não pode Entregar um novo Produto se está precisando devolver o produto antigo nome produto:  '"+ alltrim(aUnDeDad[nCont2][1]) +"'.")
+                        lRet := .F.
+                        EXIT
+                    endif
+                next nCont2
+            endif
+        next nCont
+    endif    
+    // *** FINAL William Costa - 03/04/2023 - Ticket 91079 item 1 - sistema deixa realizar entrega de peças mesmo não sendo realizado a devolução das outras
+
+return lRet
+
+Static Function fDevolucao()
+
+    Local nA        := 0
+    Local nColuna   := 0
+    Local nUnDeDad  := Len(aUnDeDad)
+    Local nPosReg   := aScan(aUnDeCam,"REGISTRO")
+    Local lDevolveu := .F.
+    
+    if nUnDeDad > 0
+        
+        nColuna     := Len(aUnDeDad[1])-1
+
+        DbSelectArea("ZHO")
+
+        for nA := 1 To nUnDeDad
+            if aUnDeDad[nA, nColuna]
+                ZHO->(Dbgoto(aUnDeDad[nA, nPosReg]))
+
+                if aUnDeDad[nA, nPosReg] == ZHO->(Recno())
+                    RecLock("ZHO", .F.)
+
+                    ZHO_DEVUSU  := __cUserID
+                    ZHO_DEVNOM  := UsrFullName(__cUserID)
+                    ZHO_DEVDAT  := Date()
+                    ZHO_DEVHOR  := Time()
+                    ZHO_QUANTI  := 0
+                    ZHO->(MsUnlock())
+                    lDevolveu     := .T.
+                endif
+            endif
+        next nA
+    endif
+
+    if lDevolveu == .T.
+
+        fAlerta("Uniforme devolvido")
+
+    endif
+
+return
+
+Static Function fEntrega()
+
+    Local nA         := 0
+    Local nColuna    := 0
+    Local nUnEnDad   := Len(aUnEnDad)
+    Local nPosCodZHH := aScan(aUnEnCam,"ZHH_CODIGO")
+    Local nPosZHIUM  := aScan(aUnEnCam,"ZHI_UM")
+    Local nPosProdut := aScan(aUnEnCam,"ZHI_PRODUT")
+    Local lEntregou  := .F.
+
+    if nUnEnDad > 0
+
+        nColuna     := Len(aUnEnDad[1])-1
+
+        for nA := 1 To nUnEnDad
+            if aUnEnDad[nA, nColuna]
+                //nRegist := aItKiDad[nA, nPosReg]
+                //cProdut := aItKiDad[nA, nPosPrd]
+
+                RecLock("ZHO", .T.)
+
+                ZHO_FILIAL  := xFilial("ZHO") 
+                ZHO_MAT     := cZI1MAT
+                ZHO_ENTDAT  := Date()
+                ZHO_ENTHOR  := Time()
+                ZHO_ENTUSU  := __cUserID
+                ZHO_ENTNOM  := UsrFullName(__cUserID)
+                //ZHO_RETDAT  := Dtoc(Date())
+                //ZHO_RETHOR  := Time()
+
+                ZHO_CODZHH  := aUnEnDad[nA, nPosCodZHH]
+                ZHO_CODZI5  := IIF(Len(aZI1SECAO)>=1,aZI1SECAO[1],"")
+                ZHO_UM      := aUnEnDad[nA, nPosZHIUM]
+                ZHO_PRODUT  := aUnEnDad[nA, nPosProdut]
+                ZHO_UUID    := cUUID
+                ZHO_QUANTI  := 1
+
+                ZHO->(MsUnlock())
+                lEntregou := .T.
+
+            endif
+        next nA
+    endif
+
+    if lEntregou == .T.
+
+        fAlerta("Uniforme entregue para o colaborador")
+
+    endif
+
+return
+
+Static Function layList(nRow, nCol, nHeight, nWidth)
+    
+    aUnEnCab	:= getCampos(CONSULTA_UNIF_ENTREGA)
+    aUnEnDad    := getDadoBRW(CONSULTA_UNIF_ENTREGA)
+
+    aUnDeCab	:= getCampos(CONSULTA_UNIF_DEVOLUCAO)
+    aUnDeDad    := getDadoBRW(CONSULTA_UNIF_DEVOLUCAO)
+    
+    oItWin01    := oCoLay01:GetWinPanel("L02C01","Win01","L02")
+    oItWin03    := oCoLay01:GetWinPanel("L02C01","Win03","L02")
+
+    oBUnEnt     := FWBrowse():New(oItWin01)
+    
+    oBUnEnt:bGotFocus := {|| nBrwFocused := CONSULTA_UNIF_ENTREGA}
+    oBUnEnt:addMarkColumns({|oBmark| fMark(oBMark, CONSULTA_UNIF_ENTREGA)},; 
+                           {|oBMark| fDblClk(oBmark, CONSULTA_UNIF_ENTREGA) /*Função DoubleClick*/ },; 
+                           {|oBmark| fHeaClk(oBmark, CONSULTA_UNIF_ENTREGA) /*Função de HEADERCLICK*/})
+    
+    oBUnEnt:setColumns(aUnEnCab)
+	oBUnEnt:setDataArray()
+	oBUnEnt:disableReport()
+	oBUnEnt:disableConfig()
+    
+    oBUnEnt:setArray(aUnEnDad)
+    
+    oBUnEnt:Activate()
+    
+    oBUnDev     := FWBrowse():New(oItWin03)
+    
+    oBUnDev:bGotFocus := {|| nBrwFocused := CONSULTA_UNIF_DEVOLUCAO}
+    oBUnDev:addMarkColumns({|oBmark| fMark(oBMark, CONSULTA_UNIF_DEVOLUCAO)},; 
+                           {|oBMark| fDblClk(oBmark, CONSULTA_UNIF_DEVOLUCAO) /*Função DoubleClick*/ },; 
+                           {|oBmark| fHeaClk(oBmark, CONSULTA_UNIF_DEVOLUCAO) /* Função de HEADERCLICK*/})
+    oBUnDev:setColumns(aUnDeCab)
+	oBUnDev:setDataArray()
+	oBUnDev:disableReport()
+	oBUnDev:disableConfig()
+    
+    oBUnDev:setArray(aUnDeDad)
+    
+    oBUnDev:Activate()
+
+    oItWin02    := oCoLay01:GetWinPanel("L02C02","Win02","L02")
+
+    oSize := FWDefSize():New(.F.)
+	
+    oSize:AddObject( "OBJ01"	, 100 , 10, .T., .T. )
+    oSize:AddObject( "OBJ02"	, 100 , 10, .T., .T. )
+    oSize:AddObject( "OBJ03"	, 100 , 10, .T., .T. )
+    oSize:AddObject( "OBJ04"	, 025 , 08, .T., .T. )
+    oSize:AddObject( "OBJ05"	, 025 , 10, .T., .T. )
+    oSize:AddObject( "OBJ06"	, 025 , 10, .T., .T. )
+    oSize:AddObject( "OBJ07"	, 025 , 10, .T., .T. )
+    oSize:AddObject( "OBJ08"	, 025 , 08, .T., .T. )
+    oSize:AddObject( "OBJ09"	, 025 , 10, .T., .T. )
+    //oSize:AddObject( "OBJ10"	, 025 , 10, .T., .T. )
+    
+	oSize:lLateral	:= .F. // Elementos um do lado do outro
+	oSize:lProp		:= .T. // Cálculo dos botões proporcionais
+	oSize:SetWindowSize({000, 000, oItWin02:nHeight, oItWin02:nWidth})
+	oSize:Process()
+
+    oSize2 := FWDefSize():New(.F.)
+	
+    oSize2:AddObject( "OBJ01"	, 100 , 10, .T., .T. )
+    oSize2:AddObject( "OBJ02"	, 100 , 10, .T., .T. )
+    oSize2:AddObject( "OBJ03"	, 100 , 10, .T., .T. )
+    
+	oSize2:lLateral	:= .T. // Elementos um do lado do outro
+	oSize2:lProp	:= .T. // Cálculo dos botões proporcionais
+	oSize2:SetWindowSize({000, 000, oItWin02:nHeight, oItWin02:nWidth})
+	oSize2:Process()
+
+    oSize3 := FWDefSize():New(.F.)
+	
+    oSize3:AddObject( "OBJ01"	, 100 , 10, .T., .T. )
+    oSize3:AddObject( "OBJ02"	, 100 , 10, .T., .T. )
+    
+	oSize3:lLateral	:= .T. // Elementos um do lado do outro
+	oSize3:lProp	:= .T. // CálccZI1MATculo dos botões proporcionais
+	oSize3:SetWindowSize({000, 000, oItWin02:nHeight, oItWin02:nWidth})
+	oSize3:Process()
+    
+    aRet := fgetSX3("ZI1_MAT")
+	oZI1MAT  := TGet():New(oSize:GetDimension("OBJ01","LININI"),;
+                           oSize3:GetDimension("OBJ01","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1MAT, cZI1MAT := u)}, oItWin02,; 
+                           oSize3:GetDimension("OBJ01","XSIZE"), 011,;
+                           ,aRet[01][06],0,16777215,,.F.,,.T.,,.F.,{|| .F. },.F.,.F.,,.F.,.F. ,,"cZI0MAT",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oZI1MAT:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oZI1MAT:cF3 := Alltrim(aRet[01][09])
+    endif
+    oZI1MAT:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_CREDEN")
+	oZI1CRE  := TGet():New(oSize:GetDimension("OBJ01","LININI"),;
+                           oSize3:GetDimension("OBJ02","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1CREDEN, cZI1CREDEN := u)}, oItWin02,; 
+                           oSize3:GetDimension("OBJ02","XSIZE"), 011,;
+                           ,aRet[01][06],0,16777215,,.F.,,.T.,,.F.,{|| .F. },.F.,.F.,,.F.,.F. ,,"cZI1CREDEN",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oZI1CRE:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oZI1CRE:cF3 := Alltrim(aRet[01][09])
+    endif
+    oZI1CRE:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_NOME")
+	oZI1NOM  := TGet():New(oSize:GetDimension("OBJ02","LININI"),;
+                           oSize:GetDimension("OBJ02","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1NOME, cZI1NOME := u)}, oItWin02,; 
+                           oSize:GetDimension("OBJ02","XSIZE"), 011,;
+                           ,aRet[01][06],0,16777215,,.F.,,.T.,,.F.,{|| .F. },.F.,.F.,,.F.,.F. ,,"cZI1NOME",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oZI1NOM:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oZI1NOM:cF3 := Alltrim(aRet[01][09])
+    endif
+    oZI1NOM:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_SECAO")
+	oZI1NOM  := TGet():New(oSize:GetDimension("OBJ03","LININI"),;
+                           oSize:GetDimension("OBJ03","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1SECAO, cZI1SECAO := u)}, oItWin02,; 
+                           oSize:GetDimension("OBJ03","XSIZE"), 011,;
+                           ,aRet[01][06],0,16777215,,.F.,,.T.,,.F.,{|| .F. },.F.,.F.,,.F.,.F. ,,"cZI1SECAO",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oZI1NOM:SetCSS("QLineEdit{font-size: 15px;}")
+	/*
+    if !Empty(aRet[01][09])
+        oZI1NOM:cF3 := Alltrim(aRet[01][09])
+    endif
+    */
+    oZI1NOM:lVisibleControl := .T.
+    
+    oSay1:= TSay():New(oSize:GetDimension("OBJ04","LININI"),;
+                    oSize:GetDimension("OBJ04","COLINI"),;
+                    {|| Chr(13)+chr(10)+'::.. Cadastro de Uniformes'},oItWin02,,,,,,.T.,CLR_RED,CLR_WHITE,;
+                    oSize:GetDimension("OBJ04","XSIZE"),19)
+
+    aRet := fgetSX3("ZI1_TCAMPA")
+	oTCAMPA  := TGet():New(oSize:GetDimension("OBJ05","LININI"),;
+                           oSize2:GetDimension("OBJ01","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TCAMPA, cZI1TCAMPA := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ01","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TCAMPA") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TCAMPA",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTCAMPA:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTCAMPA:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTCAMPA:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_TBLUTE")
+	oTBLUTE  := TGet():New(oSize:GetDimension("OBJ05","LININI"),;
+                           oSize2:GetDimension("OBJ02","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TBLUTE, cZI1TBLUTE := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ02","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TBLUTE") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TBLUTE",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTBLUTE:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTBLUTE:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTBLUTE:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_TJALEC")
+	oTJALEC  := TGet():New(oSize:GetDimension("OBJ05","LININI"),;
+                           oSize2:GetDimension("OBJ03","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TJALEC, cZI1TJALEC := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ03","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TJALEC") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TJALEC",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTJALEC:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTJALEC:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTJALEC:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_TCALPA")
+	oTCALPA  := TGet():New(oSize:GetDimension("OBJ06","LININI"),;
+                           oSize2:GetDimension("OBJ01","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TCALPA, cZI1TCALPA := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ01","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TCALPA") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TCALPA",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTCALPA:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTCALPA:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTCALPA:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_TCALTE")
+	oTCALTE  := TGet():New(oSize:GetDimension("OBJ06","LININI"),;
+                           oSize2:GetDimension("OBJ02","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TCALTE, cZI1TCALTE := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ02","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TCALTE") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TCALTE",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTCALTE:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTCALTE:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTCALTE:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_TCALCA")
+	oTCALCA  := TGet():New(oSize:GetDimension("OBJ07","LININI"),;
+                           oSize2:GetDimension("OBJ01","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TCALCA, cZI1TCALCA := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ01","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TCALCA") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TCALCA",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTCALCA:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTCALCA:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTCALCA:lVisibleControl := .T.
+
+    aRet := fgetSX3("ZI1_TMEIAS")
+	oTMEIAS  := TGet():New(oSize:GetDimension("OBJ07","LININI"),;
+                           oSize2:GetDimension("OBJ02","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1TMEIAS, cZI1TMEIAS := u)}, oItWin02,; 
+                           oSize2:GetDimension("OBJ02","XSIZE"), 010,;
+                           ,{|| fValida("cZI1TMEIAS") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1TMEIAS",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oTMEIAS:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oTMEIAS:cF3 := Alltrim(aRet[01][09])
+    endif
+    oTMEIAS:lVisibleControl := .T.
+
+    oSay2:= TSay():New(oSize:GetDimension("OBJ08","LININI"),;
+                    oSize:GetDimension("OBJ08","COLINI"),;
+                    {||Chr(13)+chr(10)+'::.. Cadastro de Uniformes'},oItWin02,,,,,,.T.,CLR_RED,CLR_WHITE,;
+                    oSize:GetDimension("OBJ08","XSIZE"),19)
+
+    aRet := fgetSX3("ZI1_CODZHL")
+	oARMARIO  := TGet():New(oSize:GetDimension("OBJ09","LININI"),;
+                           oSize3:GetDimension("OBJ01","COLINI"),; 
+                           {|u|If(PCount() == 0, cZI1CODZHL, cZI1CODZHL := u)}, oItWin02,; 
+                           oSize3:GetDimension("OBJ01","XSIZE"), 010,;
+                           ,{|| fValida("cZI1CODZHL") },0,16777215,,.F.,,.T.,,.F.,{|| !Empty(cZI1MAT) .and. !Empty(cZI1CREDEN) },.F.,.F.,,.F.,.F. ,,"cZI1CODZHL",;
+                           ,,,.T.,,,aRet[01][01],1)
+    oARMARIO:SetCSS("QLineEdit{font-size: 15px;}")
+	if !Empty(aRet[01][09])
+        oARMARIO:cF3 := Alltrim(aRet[01][09])
+    endif
+    oARMARIO:lVisibleControl := .T.
+
+    cLegenda := "::.. Legendas ..::"+chr(13)+chr(10)+chr(13)+chr(10)
+    cLegenda += " PP     - 34 a 36 "+chr(13)+chr(10)
+    cLegenda += " P        - 38 a 40 "+chr(13)+chr(10)
+    cLegenda += " M       - 42 a 44 "+chr(13)+chr(10)
+    cLegenda += " G        - 46 a 48 "+chr(13)+chr(10)
+    cLegenda += " GG     - 50 a 52 "+chr(13)+chr(10)
+    cLegenda += " XG      - 54 a 56 "+chr(13)+chr(10)
+    cLegenda += " XGG   - 58 a 60 "+chr(13)+chr(10)
+    cLegenda += " XXGG - 62 a 64 "
+
+    oSay2:= TSay():New(oSize:GetDimension("OBJ06","LININI"),;
+                    oSize2:GetDimension("OBJ03","COLINI"),;
+                    {|| cLegenda },oItWin02,,,,,,.T.,CLR_RED,CLR_WHITE,;
+                    oSize2:GetDimension("OBJ03","XSIZE"),90)
+
+return
+
+static function getCampos(nTypeBrowse)
+
+	local aCpoRet	:= {}
+    local aCampos   := {}
+	local nCampos   := 0
+    local nX        := 0
+
+    
+    IF nTypeBrowse == CONSULTA_UNIF_ENTREGA
+        aCampos		:= strToKarr(CAMPOS_UNIF_ENTREGA, ",")
+        nCampos := Len(aCampos)
+        aUnEnCab    := {}
+    ElseIF nTypeBrowse == CONSULTA_UNIF_DEVOLUCAO
+        aCampos		:= strToKarr(CAMPOS_UNIF_DEVOLUCAO, ",")
+        nCampos     := Len(aCampos)
+        aUnDeCab    := {}
+    ElseIF nTypeBrowse == CONSULTA_ARMA_DEVOLUCAO
+        aCampos		:= strToKarr(CAMPOS_ARMA_DEVOLUCAO, ",")
+        nCampos     := Len(aCampos)
+        aArDeCab    := {}
+    ENDIF
+
+    for nX := 1 to nCampos
+		cCampo	:= Alltrim(aCampos[nX])
+        
+        IF nTypeBrowse == CONSULTA_UNIF_ENTREGA
+            cValue := "{|| aUnEnDad[oBUnEnt:At(), " + cValToChar(nX) + "]}"
+        ElseIF nTypeBrowse == CONSULTA_UNIF_DEVOLUCAO
+            cValue := "{|| aUnDeDad[oBUnDev:At(), " + cValToChar(nX) + "]}"
+        ElseIF nTypeBrowse == CONSULTA_ARMA_DEVOLUCAO
+            cValue := "{|| aArDeDad[oBArDev:At(), " + cValToChar(nX) + "]}"
+        ENDIF
+
+		oColumn := FWBrwColumn():New()
+		oColumn:SetData(&(cValue))
+        
+        if Alltrim(cCampo) == "REGISTRO"
+            cTitulo := "Registro"
+        
+            oColumn:SetTitle(cTitulo)
+            oColumn:SetSize(08)
+            oColumn:SetType("N")
+        Elseif Alltrim(cCampo) == "TMP_SALDO"
+            cTitulo := "Saldo"
+        
+            oColumn:SetTitle(cTitulo)
+            oColumn:SetSize(08)
+            oColumn:SetType("N")
+        else
+
+            cTitulo := getSx3Cache(cCampo, "X3_TITULO")
+            
+            oColumn:SetTitle(getSx3Cache(cCampo, "X3_TITULO"))
+            
+            if Alltrim(cCampo) == "B1_DESC"
+                oColumn:SetSize(25)
+            ELSE
+                oColumn:SetSize(getSx3Cache(cCampo, "X3_TAMANHO"))
+            ENDIF
+
+            oColumn:SetType(getSx3Cache(cCampo, "X3_TIPO"))
+        endif
+        
+        IF nTypeBrowse == CONSULTA_UNIF_ENTREGA
+            AADD(aUnEnCam, cCampo)
+        ElseIF nTypeBrowse == CONSULTA_UNIF_DEVOLUCAO
+            AADD(aUnDeCam, cCampo)
+        ElseIF nTypeBrowse == CONSULTA_ARMA_DEVOLUCAO
+            AADD(aArDeCam, cCampo)
+        ENDIF
+        
+        aAdd(aCpoRet, oColumn)
+
+	next nX
+    
+    IF nTypeBrowse == CONSULTA_UNIF_ENTREGA
+        aAdd(aUnEnCam, "MARCA")
+        nUnEnCam    := Len(aUnEnCam)
+    ElseIF nTypeBrowse == CONSULTA_UNIF_DEVOLUCAO
+        aAdd(aUnDeCam, "MARCA")
+        nUnDeCam    := Len(aUnDeCam)
+    ElseIF nTypeBrowse == CONSULTA_ARMA_DEVOLUCAO
+        aAdd(aArDeCam, "MARCA")
+        nArDeCam    := Len(aArDeCam)
+    ENDIF
+    
+return(aCpoRet)
+
+Static Function fGetDados(lAlerta, lPesquisa, lCabec)
+
+    Local lRet          := .T.
+    Local lPesq         := .T.
+    Local cQuery        := ""
+    Local cCredenc      := ""
+    Local cMatric       := ""
+    Local cNome         := ""
+    Local cWhere        := ""
+    Local nPesq         := 0
+    Local nA            := 0
+    Default lAlerta     := .T.
+    Default lPesquisa   := .T.
+    Default lCabec      := .T.
+
+    if lCabec
+        //Pegando o texto atual
+        cPesq   := Upper(Alltrim(cValtochar(cPesq)))
+        nPesq   := Len(cPesq)
+
+        IF nPesq == 0 
+            lPesq := .F.
+        ELSEIF left(cPesq,1)$"0123456789" .and. len(cPesq) <= 8
+            cMatric := sUBSTRING(cPesq,3,6)
+        ElseIF left(cPesq,1)$"0123456789" .and. len(cPesq) >= 9
+            cCredenc := cPesq
+
+            //Enquanto existir zeros a esquerda
+            For nA := nPesq to 1
+                If SubStr(cCredenc, 1, 1) <> "0"
+                    nA := 0
+                else
+                    cCredenc := Substr(cCredenc, 2, Len(cCredenc))
+                EndIf
+            next nA--
+
+            if Empty(cCredenc) .or. cCredenc == "0"
+                lPesq := .F.
+            endif
+
+        
+        elseIF !left(cPesq,1)$"0123456789" .and. len(cPesq) > 5
+            cNome := cPesq
+        else
+            lPesq := .F.
+        endif
+
+        cQuery := " SELECT ZI1_FILIAL, ZI1_MAT, ZI1_CREDEN, ZI1_NOME, ZI1_TCAMPA, ZI1_TBLUTE, ZI1_TCALPA, ZI1_TJALEC, ZI1_TCALTE, ZI1_TCALCA, ZI1_TMEIAS, ZI1_CODZHL,ZI1_CODSIT, LTRIM(RTRIM(ZI1.ZI1_SECAO))+'-'+ZI5.ZI5_DESCRI ZI1_SECAO, ZI1.R_E_C_N_O_ REGISTRO "
+        cQuery += " FROM "+ RetSqlName("ZI1") +" (nolock) ZI1 INNER JOIN "+ retsqlname("ZI5") +" (nolock) ZI5 ON ZI1.D_E_L_E_T_='' AND ZI5.D_E_L_E_T_='' AND ZI1.ZI1_FILIAL='"+ xFilial("ZI1") +"' AND ZI5_FILIAL='"+ xfilial("ZI5") +"' AND ZI1.ZI1_SECAO=ZI5.ZI5_CODIGO "
+        cQuery += " WHERE ZI1.D_E_L_E_T_='' AND ZI1_MSBLQL !='1' AND ( (ZI1_MAT ='' AND ZI1_CREDEN !='') OR (ZI1_MAT !='' AND ZI1_CREDEN ='') OR (ZI1_MAT !='' AND ZI1_CREDEN !='')) "
+        
+        IF !lPesq
+            cWhere := "  AND ltrim(rTrim(ZI1_MAT))='ZZZZZZZZZ' "
+        else
+            if !Empty(cMatric)
+                cWhere += " AND ltrim(rTrim(ZI1_MAT))='"+ cColig + Alltrim(cMatric) +"' "
+            elseif !Empty(cCredenc)
+                cWhere += " AND RIGHT(LTRIM(RTRIM('00000000000000'+ZI1_CREDEN)),14)='"+ RIGHT(Alltrim("00000000000000"+cCredenc),14) +"'  "
+                
+            Elseif !Empty(cNome)
+                cWhere += " AND UPPER(ZI1_NOME) LIKE '%"+ Alltrim(cNome) +"%' "
+            else
+                cWhere := "  AND ltrim(rTrim(ZI1_MAT))='ZZZZZZZZZ' "
+            endif
+
+        endif
+
+        cQuery += cWhere
+
+        TcQuery cQuery ALIAS "QZI1" NEW
+
+        if QZI1->(!eof())
+
+            // *** INICIO William Costa - 03/04/2023 - Ticket 91079 item 3 - Colaboradores demitidos devem sair do cadastro
+            if alltrim(ZI1_CODSIT) == 'D' //demitido
+
+                cZI1MAT     := Space(100)
+                cZI1CREDEN  := Space(100)
+                cZI1NOME    := Space(100)
+                cZI1TCAMPA  := Space(003)
+                cZI1TJALEC  := Space(003)
+                cZI1TBLUTE  := Space(003)
+                cZI1TCALPA  := Space(003)
+                cZI1TCALTE  := Space(003)
+                cZI1TCALCA  := Space(003)
+                cZI1TMEIAS  := Space(003)
+                cZI1CODZHL  := Space(006)
+                cZI1SECAO   := Space(100)
+                lRet := .F.
+                
+            else //funcionario trabalhando
+
+                DbSelectArea("ZI1")
+                ZI1->(Dbgoto(QZI1->REGISTRO))
+
+                cZI1MAT      := QZI1->ZI1_MAT
+                cZI1CREDEN   := QZI1->ZI1_CREDEN
+                cZI1NOME     := QZI1->ZI1_NOME
+                cZI1TCAMPA   := QZI1->ZI1_TCAMPA
+                cZI1TJALEC   := QZI1->ZI1_TJALEC
+                cZI1TBLUTE   := QZI1->ZI1_TBLUTE
+                cZI1TCALPA   := QZI1->ZI1_TCALPA
+                cZI1TCALTE   := QZI1->ZI1_TCALTE
+                cZI1TCALCA   := QZI1->ZI1_TCALCA
+                cZI1TMEIAS   := QZI1->ZI1_TMEIAS
+                cZI1CODZHL   := QZI1->ZI1_CODZHL
+                cZI1SECAO    := QZI1->ZI1_SECAO
+
+                lRet := .T.
+                
+            endif    
+            // *** FINAL William Costa - 03/04/2023 - Ticket 91079 item 3 - Colaboradores demitidos devem sair do cadastro
+
+        else
+            cZI1MAT         := Space(100)
+            cZI1CREDEN      := Space(100)
+            cZI1NOME        := Space(100)
+            cZI1TCAMPA      := Space(003)
+            cZI1TJALEC      := Space(003)
+            cZI1TBLUTE      := Space(003)
+            cZI1TCALPA      := Space(003)
+            cZI1TCALTE      := Space(003)
+            cZI1TCALCA      := Space(003)
+            cZI1TMEIAS      := Space(003)
+            cZI1CODZHL      := Space(006)
+            cZI1SECAO       := Space(100)
+            lRet := .F.
+        endif
+        
+        QZI1->(DbcloseArea())
+    ENDIF
+
+    aUnEnDad    := getDadoBRW(CONSULTA_UNIF_ENTREGA)
+    
+    oBUnEnt:setArray(aUnEnDad)
+    oBUnEnt:refresh()
+
+    aUnDeDad    := getDadoBRW(CONSULTA_UNIF_DEVOLUCAO)
+    
+    oBUnDev:setArray(aUnDeDad)
+    oBUnDev:refresh()
+    
+    if lAlerta
+        if !lRet .and. nPesq != 0
+            //MsgAlert("Credencial inválido ou colaborador não encontrado ou inativo!", "..:: Não encontrado ::..")
+            fAlerta("Credencial inválida, colaborador não encontrado, inativo ou demitido!")
+        else
+            if Len(aUnEnDad) == 0
+            //    MsgAlert('<h1><font color="#FF0000">Não há itens a serem entregues. Procure o Depto. de Segurança do Trabalho!</font></h1>', "..:: Não encontrado ::..")
+                fAlerta("Não há itens a serem entregues. Procure o Depto. de Segurança do Trabalho!")
+            else
+                fAlerta("")
+            endif
+        endif
+    endif
+    
+    // *** INICIO WILLIAM SPOSITO - 10/04/2023 - ITEM 8 - Quando a matricula não tem saldo ao mostrar o alerta todo o browse é limpado/ apagado, fazer o ajuste
+    
+    cPesq := cPesq + SPACE(100 - LEN(cPesq))
+
+    // *** FINAL WILLIAM SPOSITO - 10/04/2023 - ITEM 8 - Quando a matricula não tem saldo ao mostrar o alerta todo o browse é limpado/ apagado, fazer o ajuste
+
+Return lRet
+
+//Array de dados
+Static function getDadoBRW(nTypeBrowse)
+
+	local cQuery	  := ""
+	local cAlias 	  := getNextAlias()
+	local aDados	  := {}
+	local aDado		  := {}
+	local aCampos	  := {}
+    local cCampos     := ""
+	local nX		  := 1
+	local cTipoCp	  := ""
+    local cPictur     := ""
+    Local cQebra      := chr(13)+chr(10)
+    Local nSaldoFinal := 0
+
+    DbSelectArea("ZHO")
+
+    IF nTypeBrowse == CONSULTA_UNIF_ENTREGA
+        aCampos := strToKarr(CAMPOS_UNIF_ENTREGA, ",")
+        cCampos := CAMPOS_UNIF_ENTREGA
+        
+        cQuery := " SELECT ZHH.ZHH_CODIGO, ZHH.ZHH_DESCRI, ZHK.ZHK_NUMKIT, ZI5.ZI5_QTDUNF, ZHI.ZHI_UM, ZHI.ZHI_PRODUT, ZHK.ZHK_NUMKIT "+cQebra
+        cQuery += " FROM "+ retsqlname("ZI1") +" ZI1 INNER JOIN "+ retsqlname("ZI5") +" ZI5 ON ZI1.D_E_L_E_T_='' AND ZI5.D_E_L_E_T_='' AND ZI1.ZI1_FILIAL='"+xFilial("ZI1")+"' AND ZI5.ZI5_FILIAL='"+xFilial("ZI5")+"' AND ZI1.ZI1_SECAO=ZI5.ZI5_CODIGO "+cQebra
+        cQuery += "                 INNER JOIN "+ retsqlname("ZHK") +" ZHK ON ZHK.D_E_L_E_T_='' AND ZI5.ZI5_FILIAL='"+xFilial("ZI5")+"' AND ZHK_FILIAL='"+xFilial("ZHK")+"' AND ZI5.ZI5_CODIGO=ZHK.ZHK_CODZI5 "+cQebra
+        cQuery += "                 INNER JOIN "+ retsqlname("ZHH") +" ZHH ON ZHH.D_E_L_E_T_='' AND ZHK.ZHK_FILIAL='"+xFilial("ZHK")+"' AND ZHH.ZHH_FILIAL='"+xFilial("ZHH")+"' AND ZHK.ZHK_CODZHH=ZHH.ZHH_CODIGO "+cQebra
+        cQuery += "                 INNER JOIN "+ retsqlname("ZHI") +" ZHI ON ZHI.D_E_L_E_T_='' AND ZHI.ZHI_FILIAL='"+xFilial("ZHI")+"' AND ZHH.ZHH_FILIAL='"+xFilial("ZHH")+"' AND ZHI.ZHI_CODIGO=ZHH.ZHH_CODIGO "+cQebra
+        cQuery += "                         AND (   (ZHH.ZHH_TIPO='01' AND ZI1.ZI1_TCAMPA=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             OR (ZHH.ZHH_TIPO='02' AND ZI1.ZI1_TBLUTE=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             OR (ZHH.ZHH_TIPO='03' AND ZI1.ZI1_TCALPA=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             OR (ZHH.ZHH_TIPO='04' AND ZI1.ZI1_TCALTE=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             OR (ZHH.ZHH_TIPO='05' AND ZI1.ZI1_TCALCA=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             OR (ZHH.ZHH_TIPO='06' AND ZI1.ZI1_TMEIAS=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             OR (ZHH.ZHH_TIPO='07' AND ZI1.ZI1_TJALEC=ZHI.ZHI_UM) "+cQebra
+        cQuery += "                             ) "+cQebra
+        /*
+        cQuery += "                 LEFT  JOIN ( SELECT ZHO.ZHO_FILIAL, ZHO.ZHO_MAT, ZHO.ZHO_CODZHH, COUNT(*) TMP_SALDO "+cQebra
+        cQuery += "                              FROM "+ retsqlname("ZHO") +" ZHO "+cQebra
+        cQuery += "                              WHERE ZHO.D_E_L_E_T_='' AND ZHO.ZHO_ENTDAT='' "+cQebra
+        cQuery += "                              GROUP BY ZHO.ZHO_FILIAL, ZHO.ZHO_MAT, ZHO.ZHO_CODZHH) ZHO ON ZHO.ZHO_FILIAL=ZI1.ZI1_FILIAL AND ZHO.ZHO_MAT=ZI1.ZI1_MAT AND ZHK.ZHK_CODZHH=ZHO.ZHO_CODZHH    "+cQebra
+        */
+        //cQuery += " LEFT JOIN ( "+cQebra
+        //cQuery += " SELECT ZHO_FILIAL, ZHO_MAT, COUNT(*) CONTADOR "+cQebra
+        //cQuery += " FROM  "+cQebra
+        //cQuery += " (SELECT DISTINCT ZHO_FILIAL, ZHO_MAT, ZHO_UUID "+cQebra
+        //cQuery += " FROM "+ Retsqlname("ZHO") +" "+cQebra
+        //cQuery += " WHERE D_E_L_E_T_='' AND ZHO_MAT='"+ Alltrim(cZI1MAT) +"' AND ZHO_ENTDAT='"+ Dtos(Date()) +"') ENT "+cQebra
+        // cQuery += " WHERE ENT.ZHO_FILIAL='02' "+cQebra
+        //cQuery += " GROUP BY ZHO_FILIAL, ZHO_MAT "+cQebra
+        //cQuery += "  ) ZHO ON ZHO.ZHO_FILIAL=ZI1.ZI1_FILIAL AND ZHO.ZHO_MAT=ZI1.ZI1_MAT    "+cQebra
+        cQuery += " WHERE ZI1.D_E_L_E_T_='' AND (ZI1.ZI1_CREDEN = '"+ Alltrim(cZI1CREDEN) +"' AND ZI1.ZI1_MAT = '"+ Alltrim(cZI1MAT) +"') "+cQebra
+        cQuery += "    ORDER BY ZHK.ZHK_NUMKIT, ZHH.ZHH_CODIGO; "
+    
+    ElseIF nTypeBrowse == CONSULTA_UNIF_DEVOLUCAO
+        //"ZHO_CODZHH,ZHO_UNDESC,ZHO_UM,ZHO_PRODUT,ZHO_ENTDAT,ZHO_ENTHOR,ZHO_ENTUSU,ZHO_CODZI5,ZHO_DEDESC"
+        aCampos := strToKarr(CAMPOS_UNIF_DEVOLUCAO, ",")
+        cCampos := CAMPOS_UNIF_DEVOLUCAO
+        
+        cQuery := " SELECT ZHO.*, ZI5.ZI5_DESCRI ZHO_DEDESC, ZHH.ZHH_DESCRI ZHO_UNDESC, ZHO.R_E_C_N_O_ REGISTRO"+cQebra
+        cQuery += " FROM "+ retsqlname("ZHO") +" ZHO  "+cQebra
+        cQuery += "   INNER JOIN "+ retsqlname("ZHH") +" ZHH ON ZHO.D_E_L_E_T_='' AND ZHH.D_E_L_E_T_='' AND ZHO.ZHO_FILIAL='"+xFilial("ZHO")+"' AND ZHH.ZHH_FILIAL='"+xFilial("ZHH")+"' AND ZHO.ZHO_CODZHH=ZHH.ZHH_CODIGO "+cQebra
+        cQuery += "   INNER JOIN "+ retsqlname("ZI5") +" ZI5 ON ZI5.D_E_L_E_T_='' AND ZHO.ZHO_FILIAL='"+xFilial("ZHO")+"' AND ZI5.ZI5_FILIAL='"+xFilial("ZI5")+"' AND ZHO.ZHO_CODZI5=ZI5.ZI5_CODIGO "+cQebra 
+        cQuery += " WHERE ZI5.D_E_L_E_T_='' AND ZHO.ZHO_MAT = '"+ Alltrim(cZI1MAT) +"' AND ZHO.ZHO_DEVDAT ='' "+cQebra
+        cQuery += " ORDER BY ZHO.ZHO_UUID; "
+    ElseIF nTypeBrowse == CONSULTA_ARMA_DEVOLUCAO
+        
+        aCampos := strToKarr(CAMPOS_ARMA_DEVOLUCAO, ",")
+        cCampos := CAMPOS_ARMA_DEVOLUCAO
+        
+        cQuery := " SELECT ZHL.*, ZI1.ZI1_MAT, ZHL.R_E_C_N_O_ REGISTRO"+cQebra //Everson - 10/01/2023 -Ticket TI.
+        cQuery += " FROM "+ retsqlname("ZI1") +" ZI1  "+cQebra
+        cQuery += "   INNER JOIN "+ retsqlname("ZHL") +" ZHL ON ZI1.D_E_L_E_T_='' AND ZHL.D_E_L_E_T_='' AND ZI1.ZI1_FILIAL='"+xFilial("ZI1")+"' AND ZHL.ZHL_FILIAL='"+xFilial("ZHL")+"' AND ZI1.ZI1_CODZHL=ZHL.ZHL_CODIGO "+cQebra
+        cQuery += " WHERE ZI1.D_E_L_E_T_='' AND ZI1.ZI1_FILIAL = '"+ xFilial("ZI1") +"' AND ZI1.ZI1_CODSIT = 'D' "+cQebra //Everson - 27/04/2022. Chamado 71636. //Everson, 30/06/2022, ticket 75608.
+        cQuery += " ORDER BY ZHL.ZHL_CODIGO; "
+    
+    endif
+
+	tcQuery cQuery new alias &cAlias
+
+	(cAlias)->(DbGoTop())
+
+	if (cAlias)-> (!eof())
+
+		While (cAlias)->(!eof())
+			aDado := {}
+              
+            for nX := 1 to Len(aCampos)
+
+                // *** INICIO William Costa - 26/04/2023 - Ticket 91079 item 2 - Resolver Problema de renovação de saldos
+                IF aCampos[nX] == "TMP_SALDO"
+                    
+                    nSaldoFinal := saldounif(cZI1MAT,cZI1CREDEN,(cAlias)->ZHH_CODIGO)
+                    aAdd(aDado, nSaldoFinal)
+                
+                ELSE
+                
+                    cTipoCp	:= allTrim(getSx3Cache(aCampos[nX], "X3_TIPO"))
+                    cPictur	:= allTrim(getSx3Cache(aCampos[nX], "X3_PICTURE"))
+                    
+                    if cTipoCp == "N"
+                        aAdd(aDado,  Transform((cAlias)-> &(aCampos[nX]), cPictur))
+                    elseif cTipoCp == "D"
+                        aAdd(aDado, sToD((cAlias)-> &(aCampos[nX])))
+                    else
+                        aAdd(aDado, (cAlias)-> &(aCampos[nX]))
+                    endif
+
+                ENDIF
+                // *** FINAL William Costa - 26/04/2023 - Ticket 91079 item 2 - Resolver Problema de renovação de saldos
+            next nX
+            
+            IF nTypeBrowse == CONSULTA_UNIF_ENTREGA
+                aAdd(aDado,.F.)
+            ElseIF nTypeBrowse == CONSULTA_UNIF_DEVOLUCAO
+                aAdd(aDado,.F.)
+            ElseIF nTypeBrowse == CONSULTA_ARMA_DEVOLUCAO
+                aAdd(aDado,.F.)
+            Endif
+
+            aAdd(aDado, .F.)
+			aAdd(aDados, aDado)
+			(cAlias)->(DbSkip())
+		EndDo
+
+	endIf
+
+    (cAlias)->(DbCloseArea())
+
+return(aDados)
+
+// {|| aItKiDad[oBItKit:At(), " + cValToChar(nX) + "]}
+Static Function fMark(oBMark, nMarkID)
+
+    Local cRet := "LBNO"
+
+    IF nMarkID == CONSULTA_UNIF_ENTREGA .And. Len(aUnEnDad) > 0 .And. Len(aUnEnDad) >= oBUnEnt:At() //Everson, 04/07/2022. ticket 75797.
+        cRet := IIf(aUnEnDad[oBUnEnt:At(), nUnEnCam],'LBOK','LBNO')
+    ElseIF nMarkID == CONSULTA_UNIF_DEVOLUCAO .And. Len(aUnDeDad) > 0 .And. Len(aUnDeDad) >= oBUnDev:At() //Everson, 04/07/2022. ticket 75797.
+        cRet := IIf(aUnDeDad[oBUnDev:At(), nUnDeCam],'LBOK','LBNO')
+    ElseIF nMarkID == CONSULTA_ARMA_DEVOLUCAO .And. Len(aArDeDad) > 0 .And. Len(aArDeDad) >= oBArDev:At() //Everson, 04/07/2022. ticket 75797.
+        cRet := IIf(aArDeDad[oBArDev:At(), nArDeCam],'LBOK','LBNO')
+    ENDIF
+
+return cRet
+
+Static Function fDblClk(oBMark, nMarkID, nLin)
+
+    Local lRet      := .T.
+    Local cNumKit   := ""
+    Local nA        := 0
+    Local nMaxArr   := 0
+    Local nPosKit   := aScan(aUnEnCam,"ZHK_NUMKIT")
+    Default nLin    := 0
+    
+    IF nMarkID == CONSULTA_UNIF_ENTREGA
+    
+        nMaxArr := Len(aUnEnDad)
+        
+        if nMaxArr > 0
+            
+            nLin    := iif(nLin > 0, nLin, oBUnEnt:At())
+            
+            lRet := IIf(aUnEnDad[nLin, nUnEnCam], .F., .T.)
+            aUnEnDad[nLin, nUnEnCam]    := lRet
+
+            // *** INICIO WILLIAM SPOSITO - 11/04/2023 - ITEM 5 Ao flegar um item já flegar os outros itens do mesmo Kit, podendo o operador desflegar o que não foi entregue
+            if aUnEnDad[nLin][8] == .T. //significa que a linha esta marcada
+
+                cNumKit := Alltrim(aUnEnDad[nLin, nPosKit])
+                            
+                for nA := 1 to nMaxArr
+                    
+                    if nA != nLin
+                        if lRet
+                            if aLLTRIM(aUnEnDad[nA, nPosKit]) == cNumKit
+                                aUnEnDad[nA, nUnEnCam]    := lRet
+                            else
+                                aUnEnDad[nA, nUnEnCam]    := !lRet
+                            endif
+                        else
+                            aUnEnDad[nA, nUnEnCam]    := lRet    
+                        endif
+                    endif
+                next nA
+            endif
+            // *** FINAL WILLIAM SPOSITO - 11/04/2023 - ITEM 5 Ao flegar um item já flegar os outros itens do mesmo Kit, podendo o operador desflegar o que não foi entregue
+
+        endif
+    ElseIF nMarkID == CONSULTA_UNIF_DEVOLUCAO
+        nMaxArr := Len(aUnDeDad)
+        
+        if nMaxArr > 0
+
+            nLin := iif(nLin > 0, nLin, oBUnDev:At())
+
+            lRet := IIf(aUnDeDad[nLin, nUnDeCam], .F., .T.)
+            aUnDeDad[nLin, nUnDeCam]    := lRet
+
+            // *** INICIO WILLIAM SPOSITO - 11/04/2023 - ITEM 15 Ao flegar um item já flegar os outros itens do mesmo Kit, podendo o operador desflegar o que não foi devolvido
+            if aUnDeDad[nLin][12] == .T. //significa que a linha esta marcada
+
+                cNumKit := Alltrim(aUnDeDad[nLin, nPosKit])
+                            
+                for nA := 1 to nMaxArr
+                    
+                    if nA != nLin
+                        if lRet
+                            if aLLTRIM(aUnDeDad[nA, nPosKit]) == cNumKit
+                                aUnDeDad[nA, nUnDeCam]    := lRet
+                            else
+                                aUnDeDad[nA, nUnDeCam]    := !lRet
+                            endif
+                        else
+                            aUnDeDad[nA, nUnDeCam]    := lRet    
+                        endif
+                    endif
+                next nA
+            endif
+            // *** FINAL WILLIAM SPOSITO - 11/04/2023 - ITEM 15 Ao flegar um item já flegar os outros itens do mesmo Kit, podendo o operador desflegar o que não foi devolvido
+
+        endif
+    ElseIF nMarkID == CONSULTA_ARMA_DEVOLUCAO
+        nMaxArr := Len(aArDeDad)
+        
+        if nMaxArr > 0
+
+            nLin := iif(nLin > 0, nLin, oBArDev:At())
+
+            lRet := IIf(aArDeDad[nLin, nArDeCam], .F., .T.)
+            aArDeDad[nLin, nArDeCam]    := lRet
+
+        endif
+    ENDIF
+
+    oBUnEnt:refresh()
+    oBUnDev:refresh()
+
+return lRet
+
+Static Function fHeaClk(oBMark, nMarkID)
+
+    Local lRet      := .T.
+    Local nA        := 1
+    Local nTotal    := 0
+    Local nPosAtu   := 0
+    Local cNumKit   := ""
+    Local nPosKit   := aScan(aUnEnCam,"ZHK_NUMKIT")
+    
+    IF nMarkID == CONSULTA_UNIF_ENTREGA
+        
+        nTotal := Len(aUnEnDad)
+        
+        For nA := 1 TO nTotal
+            if aUnEnDad[nA, nUnEnCam] .AND. !Empty(aUnEnDad[nA, nPosKit])
+                cNumKit := Alltrim(aUnEnDad[nA, nPosKit])
+                nPosAtu := nA
+            endif
+        next nA
+
+        For nA := 1 TO nTotal
+            if cNumKit == Alltrim(aUnEnDad[nA, nPosKit]) .and. !Empty(cNumKit) .and. nPosAtu != nA
+                fDblClk(oBMark, CONSULTA_UNIF_ENTREGA, nA)
+            endif
+        next nA
+
+        oBUnEnt:refresh()
+        
+    ElseIF nMarkID == CONSULTA_UNIF_DEVOLUCAO
+        nTotal := Len(aUnDeDad)
+
+        For nA := 1 TO nTotal
+            fDblClk(oBMark, CONSULTA_UNIF_DEVOLUCAO, nA)
+        next nA
+
+        oBUnDev:refresh()
+    
+    ElseIF nMarkID == CONSULTA_ARMA_DEVOLUCAO
+        nTotal := Len(aArDeDad)
+
+        For nA := 1 TO nTotal
+            fDblClk(oBMark, CONSULTA_ARMA_DEVOLUCAO, nA)
+        next nA
+
+        oBArDev:refresh()
+    ENDIF
+    
+return lRet
+
+/* Busca as informações do cabeçalho. */
+Static Function fgetSX3(cCampos)
+
+    Local aRet      := {}
+    Local cCampo    := ""
+    Local nX        := 0
+    Local nCampos   := 0
+    Local bValid
+    Local aCampos   := Separa(cCampos,",")
+    
+    //@history Ticket 70142  - Rodrigo / Flek Solution - 18/07/2022 - Ajustes Dic. de dados no Banco	
+    //dbselectarea("SX3")
+    //sx3->(dbsetorder(2)) // Campo
+    nCampos := len(aCampos)
+    
+    for nx := 1 to nCampos
+
+        cCampo := Alltrim(aCampos[nX])
+        cUsado := GetSX3Cache(cCampo, "X3_USADO")
+        
+        if !Empty(GetSX3Cache(cCampo, "X3_CAMPO"))
+
+            bValid := Alltrim(GetSX3Cache(cCampo, "X3_VALID"))
+
+            if Empty(bValid)
+                bValid := {|| .T. }
+            ELSE
+                bValid := &("{|| "+Alltrim(GetSX3Cache(cCampo, "X3_VALID")) +" }")
+            endif
+
+            aadd(aRet,{ alltrim(GetSX3Cache(cCampo, "X3_TITULO")),;
+            GetSX3Cache(cCampo, "X3_CAMPO")	,;
+            GetSX3Cache(cCampo, "X3_PICTURE"),;
+            GetSX3Cache(cCampo, "X3_TAMANHO"),;
+            GetSX3Cache(cCampo, "X3_DECIMAL"),;
+            bValid,;
+            GetSX3Cache(cCampo, "X3_USADO"),;
+            GetSX3Cache(cCampo, "X3_TIPO"),;
+            GetSX3Cache(cCampo, "X3_F3"),;
+            GetSX3Cache(cCampo, "X3_CONTEXT"),;
+            GetSX3Cache(cCampo, "X3_CBOX"),;
+            GetSX3Cache(cCampo, "X3_RELACAO")})
+        endif
+    next nx
+
+return aRet
+
+Static Function saldounif(cZI1MAT,cZI1CREDEN,cProduto)
+
+    Local nSaldoUni    := 0
+    Local nQTDUNF      := 0
+    Local nHorMaior    := 0
+    Local nHorMenor    := 0
+    Local nMTrocaUn    := 0
+    
+    nMTrocaUn := GetMV("MV_MINUTOUN",.F.,720) // PARAMETRO QUE IRÁ DEFINIR A HORA QUE SERÁ FEITA A LIBERAÇÃO DE UM NOVO SALDO DOS UNIFORMES EM MINUTOS 720MIN = 12 HORAS
+
+    // *** INICIO DESCOBRIR SALDO DE TROCA POR DIA NOVAMENTE ***//
+
+    IF SELECT ("TRC") > 0
+
+		TRC->(DbCloseArea())
+
+	ENDIF
+
+    BeginSQL Alias "TRC"
+        %NoPARSER%   
+        SELECT ZI5_QTDUNF 
+          FROM %Table:ZI1% ZI1
+    INNER JOIN %Table:ZI5% ZI5 
+            ON ZI5.ZI5_FILIAL = ''
+           AND ZI1.ZI1_SECAO  = ZI5.ZI5_CODIGO
+           AND ZI5.D_E_L_E_T_ = ''
+         WHERE ZI1_FILIAL     = %EXP:xFilial("ZI1")% 
+           AND ZI1_MAT        = %EXP:cZI1MAT% 
+           AND ZI1_CREDEN     = %EXP:cZI1CREDEN% 
+           AND ZI1.D_E_L_E_T_ = ''
+            
+    EndSQl
+
+    DBSELECTAREA("TRC")
+    TRC->(DBGOTOP())
+    While TRC->(!EOF())
+					
+        nQTDUNF := TRC->ZI5_QTDUNF
+    
+        TRC->(dbSkip())							
+    EndDo   
+    TRC->(dbCloseArea())  
+
+    // *** FINAL DESCOBRIR SALDO DE TROCA POR DIA NOVAMENTE ***//
+
+    // *** INICIO DESCOBRIR SALDO DE UNIFORMES SOLICITADOS A MAIS DE 12 HORAS ***//
+
+    IF SELECT ("TRD") > 0
+
+		TRD->(DbCloseArea())
+
+	ENDIF
+
+    BeginSQL Alias "TRD"
+        %NoPARSER%   
+        SELECT COUNT(*) CONTADOR_MAIOR
+          FROM %Table:ZHO% ZHO
+         WHERE ZHO.ZHO_FILIAL                                                                 = %EXP:xFilial("ZI1")% 
+           AND ZHO.ZHO_MAT                                                                    = %EXP:cZI1MAT% 
+           AND ZHO.ZHO_CODZHH                                                                 = %EXP:cProduto% 
+           AND DATEDIFF(MINUTE, (CONCAT((ZHO.ZHO_ENTDAT), ' ', (ZHO.ZHO_ENTHOR))), GETDATE()) > %EXP:nMTrocaUn%
+           AND ZHO.ZHO_DEVDAT                                                                 = ''
+           AND ZHO.D_E_L_E_T_                                                                 = ''
+            
+    EndSQl
+
+    DBSELECTAREA("TRD")
+    TRD->(DBGOTOP())
+    While TRD->(!EOF())
+					
+        nHorMaior := TRD->CONTADOR_MAIOR
+    
+        TRD->(dbSkip())							
+    EndDo   
+    TRD->(dbCloseArea())
+
+    // *** FINAL  DESCOBRIR SALDO DE UNIFORMES SOLICITADOS A MAIS DE 12 HORAS ***//
+
+    // *** INICIO DESCOBRIR SALDO DE UNIFORMES SOLICITADOS A MENOS DE 12 HORAS ***//
+
+    IF SELECT ("TRE") > 0
+
+		TRE->(DbCloseArea())
+
+	ENDIF
+
+    BeginSQL Alias "TRE"
+        %NoPARSER%   
+        SELECT COUNT(*) CONTADOR_MENOR
+          FROM %Table:ZHO% ZHO
+         WHERE ZHO.ZHO_FILIAL                                                                 = %EXP:xFilial("ZI1")% 
+           AND ZHO.ZHO_MAT                                                                    = %EXP:cZI1MAT% 
+           AND ZHO.ZHO_CODZHH                                                                 = %EXP:cProduto% 
+           AND DATEDIFF(MINUTE, (CONCAT((ZHO.ZHO_ENTDAT), ' ', (ZHO.ZHO_ENTHOR))), GETDATE()) < %EXP:nMTrocaUn%
+           AND ZHO.D_E_L_E_T_                                                                 = ''
+            
+    EndSQl
+
+    DBSELECTAREA("TRE")
+    TRE->(DBGOTOP())
+    While TRE->(!EOF())
+					
+        nHorMenor := TRE->CONTADOR_MENOR
+    
+        TRE->(dbSkip())							
+    EndDo   
+    TRE->(dbCloseArea())
+
+    // *** FINAL  DESCOBRIR SALDO DE UNIFORMES SOLICITADOS A MENOS DE 12 HORAS ***//
+
+    // *** INICIO DESCOBRIR SALDO DO UNIFORME ***//
+
+    IF nHorMaior > nQTDUNF //a variavel nHorMaior nunca pode ser maior que nQTDUNF
+
+        nHorMaior := nQTDUNF
+
+    ENDIF
+
+    nSaldoUni := nQTDUNF - IIF(nHorMaior - nHorMenor < 0,(nHorMaior - nHorMenor)*-1,nHorMaior - nHorMenor)
+    // *** FINAL  DESCOBRIR SALDO DO UNIFORME ***//
+
+return nSaldoUni
