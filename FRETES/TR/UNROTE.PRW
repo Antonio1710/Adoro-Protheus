@@ -11,12 +11,13 @@
 	@history Ticket 64881 - Fernando Sigoli - 14/01/2022 - Adicionado tratamento da LIMPAZCI, apenas para a empresa 01/02 que em salesforce
 	@history Ticket 66691 - Leonardo P. Monteiro - 19/01/2022 - Correção de error.log.
 	@history Ticket 69574   - Abel Bab - 21/03/2022 - Projeto FAI
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Ajuste Nova Empresa
 /*/
 
 USER FUNCTION UNROTE() 
-	Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Private cEmpFL3 := SuperGetMv("MV#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - William Costa - 22/05/2023
+	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	Private _cEmpFL3 := SuperGetMv("MV#_EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - William Costa - 22/05/2023
 
 	U_ADINF009P(SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))) + '.PRW',SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))),'Remove placa do pedido de vendas para exclusao do pedido')
 
@@ -46,7 +47,7 @@ USER FUNCTION UNROTE()
 			//Ticket 66691 - Leonardo P. Monteiro - 19/01/2022.
 			//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 			//IF Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF
-			If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL3  //ticket TI - William Costa - 22/05/2023 
+			If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3  //ticket TI - William Costa - 22/05/2023 
 
 				IF 	SC5->C5_XSFPED <> ''
 					LIMPAZCI(SC5->C5_NUM)
@@ -55,7 +56,7 @@ USER FUNCTION UNROTE()
 
 			//Everson - 02/04/2018. Chamado 037261.
 			//IF FindFunction("U_ADVEN050P") .And. Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF
-			IF FindFunction("U_ADVEN050P") .And. Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL3  //ticket TI - William Costa - 22/05/2023 
+			IF FindFunction("U_ADVEN050P") .And. Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3  //ticket TI - William Costa - 22/05/2023 
 				IF Upper(Alltrim(cValToChar(GetMv("MV_#SFATUL")))) == "S"
 				
 					U_ADVEN050P("",,," AND C5_NUM = '" + Alltrim(cValToChar(SC5->C5_NUM)) + "' AND C5_XPEDSAL <> '' ",,,,,,.T.)

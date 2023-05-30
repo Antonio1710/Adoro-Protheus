@@ -20,6 +20,7 @@
 @history ticket 91009 - Antonio Domingos - 03/04/2023 - LP 660-000 ABRIR REGRA (VALOR) - inclusão de parcela e distinct mantido
 @history ticket T.I   - WILLIAM COSTA    - 17/05/2023 - INCLUSAO DA EMPRESA 13
 @history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 /*/
 
 User Function RETVALE2()
@@ -92,8 +93,9 @@ RestArea(_aArea)
 Return(_nValorSE2)
 
 Static Function SqlTitPag(_cFilial,_cFornece,_cLoja,_cPrefixo,_cDoc)
+	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 30/05/2023
 	//ticket 84293 - Antonio Domingos - 01/12/2022 (Se a Empresa é diferente de 01-Varzea Paulista usar query antiga)
-	If !(SM0->M0_CODIGO $ SuperGetMv("MV_#EMPAT1",.F.,"01/13")) //Codigo de Empresas Ativas Grupo 1 
+	If !(alltrim(SM0->M0_CODIGO) $ _cEmpAt1) //ticket TI - Antonio Domingos - 30/05/2023 
 		BeginSQL Alias "TRB"
 			%NoPARSER%
 			SELECT SE2.E2_VALOR,SF1.F1_VALBRUT

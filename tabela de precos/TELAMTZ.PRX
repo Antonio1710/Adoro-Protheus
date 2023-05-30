@@ -19,6 +19,7 @@
 	@history Ticket 70142  - Edvar / Flek Solution - 07/04/2022 - Retirada de função PUTSX1
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 /*/
 User Function TELAMTZ() // U_TELAMTZ()
 
@@ -272,7 +273,7 @@ Static Function excTab(cTab)
     RestArea(aArea)
 	
 Return Nil
-
+//@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 Static Function processar()
 
 	//Everson - 07/10/2021. Chamado 17420.

@@ -11,6 +11,7 @@
 	@history Ticket 69236    - Abel Babini       - 28/03/2022 - Ajuste dos códigos de produtos
 	@history ticket 88595    - Fernando Macieira - 14/03/2023 - BLOCO H - Importação Dados 2022
 	@history ticket 88595    - Fernando Sigoli   - 15/03/2023 - BLOCO H - Importação Dados 2022
+	@history ticket TI - Antonio Domingos - 30/05/2023 - Revisão Ajuste Nova Empresa
 /*/
 User Function SPDFIS07()
 
@@ -18,8 +19,8 @@ User Function SPDFIS07()
 	Local cSituacao   := PARAMIXB[2] // Situação do inventario
 	Local cRetorno    := SB1->B1_CONTA // @history ticket 88595 - 14/03/2023 - Fernando Macieira - BLOCO H - Importação Dados 2022
 	Local cCodForn    := Alltrim(SA2->A2_COD)
-	Private cEmpFL1   := SuperGetMv("MV#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - William Costa - 23/05/2023
-	Private cEmpFL7   := SuperGetMv("MV#EMPFL7",.F.,"010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 7 //ticket TI - William Costa - 23/05/2023
+	Private _cEmpFL1   := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - William Costa - 23/05/2023
+	Private _cEmpFL7   := SuperGetMv("MV_#EMPFL7",.F.,"010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 7 //ticket TI - William Costa - 23/05/2023
 
 	//    2- Item de propriedade de terceiros em posse do informante
 	If cSituacao == '1' .and. Alltrim(cCodProduto) <> "383369" .and. Alltrim(cCodProduto) <> "100252"
@@ -27,7 +28,7 @@ User Function SPDFIS07()
 	EndIf
 
 	//    1- Item de propriedade do informante em posse de terceiros
-	If cSituacao == '0' .and. Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL1 .and. (Alltrim(cCodProduto) == "349368" .or. Alltrim(cCodProduto) == "349369") //ticket TI - William Costa - 24/05/2023
+	If cSituacao == '0' .and. Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL1 .and. (Alltrim(cCodProduto) == "349368" .or. Alltrim(cCodProduto) == "349369") //ticket TI - William Costa - 24/05/2023
 		cRetorno := "111540002"
 	ElseIf cSituacao == '1' .and. ( Alltrim(cCodProduto) == "383369" .or. Alltrim(cCodProduto) == "385351" ) // @history ticket 88595 - 14/03/2023 - Fernando Macieira - BLOCO H - Importação Dados 2022
 		cRetorno := "111580002"
@@ -74,13 +75,13 @@ User Function SPDFIS07()
 	Se for filial 0B, situação 1, B1_TIPO = MP, CONTA CONTABIL 111580001
 	*/
 
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "PA" .and. AllTrim(cSituacao) == '0' //ticket TI - William Costa - 24/05/2023
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "PA" .and. AllTrim(cSituacao) == '0' //ticket TI - William Costa - 24/05/2023
 		cRetorno := "111510006"
-	ElseIf Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "MP" .and. AllTrim(cSituacao) == '0' //ticket TI - William Costa - 24/05/2023
+	ElseIf Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "MP" .and. AllTrim(cSituacao) == '0' //ticket TI - William Costa - 24/05/2023
 		cRetorno := "111530013"
-	ElseIf Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "PA" .and. AllTrim(cSituacao) == '1' //ticket TI - William Costa - 24/05/2023
+	ElseIf Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "PA" .and. AllTrim(cSituacao) == '1' //ticket TI - William Costa - 24/05/2023
 		cRetorno := "111580004"
-	ElseIf Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "MP" .and. AllTrim(cSituacao) == '1' //ticket TI - William Costa - 24/05/2023
+	ElseIf Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL7 .and. AllTrim(SB1->B1_TIPO) == "MP" .and. AllTrim(cSituacao) == '1' //ticket TI - William Costa - 24/05/2023
 		cRetorno := "111580001"
 	EndIf
 	//
