@@ -17,6 +17,7 @@
 	@history Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/
 User Function M410ALOK()
 

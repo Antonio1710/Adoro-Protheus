@@ -30,6 +30,7 @@
 	@history Ticket 83991 - Everson - 30/11/2022 - Adicionados dados para inclusão de CT-e na empresa Ceres.
 	@history Ticket TI    - Everson - 30/01/2023 - Removida validação da Central XML.
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/
 User Function ADFIS032P(aXEmpFil) // U_ADFIS032P() //Everson-29/04/2022-Ticket 70593.
 
@@ -605,12 +606,14 @@ Static Function paramFis() //Everson - 21/10/2019. Chamado 029058.
 	Local aArea	   	:= GetArea()
 	Local aDados	:= {}
     Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
+	Local _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 31/05/2023
 	//Produto,TES sem ICMS, TES com ICMS, Natureza da operação.
 	//Everson - 06/03/2020. Chamado 054941.
-	If cEmpAnt $ _cEmpAt1 //Everson - 18/03/2020. Chamado 054941.
+	If alltrim(cEmpAnt) $ _cEmpAt1 //Everson - 18/03/2020. Chamado 054941. //ticket TI - Antonio Domingos - 31/05/2023 
 		//
 		//Abel   -25/04/2022-Ticket 69574.   Projeto FAI
-		If Alltrim(cFilAnt) $ "02|0B"
+		//If Alltrim(cFilAnt) $ "02|0B"
+		If alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 //ticket TI - Antonio Domingos - 31/05/2023 
 			Aadd(aDados,{"800922","03E","405","22003"}) //Longo percurso.
 			Aadd(aDados,{"800923","03E","405","22003"}) //Frete varejo.
 			Aadd(aDados,{"808360","03E","405","22003"}) //Frete exportação

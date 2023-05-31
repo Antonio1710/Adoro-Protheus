@@ -125,6 +125,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 //@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+//@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 User Function xProrPag()    
 
 Local lAdmin		:=	FwIsAdmin(RetCodUsr())      
@@ -1082,7 +1083,7 @@ cHtml	+=	'<table border="0" cellpadding="0" cellspacing="0" height="58" width="1
 cHtml	+=	'  <tbody>' 																																	+ CRLF
 cHtml	+=	'    <tr>' 																																		+ CRLF
 cHtml	+=	'      <td>'																																	+ CRLF
-if	cEmpAnt $ _cEmpAt1
+if	alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 31/05/2023 
 	cHtml	+=	'        <img style="width: 150px; height: 72px;" src="http://intra.cclind.com.br/Content/images/Logo_CCL_Assinatura.gif" border="0"> '		+ CRLF
 elseif	cEmpAnt == "02"
 	cHtml	+=	'        <img style="width: 180px; height: 44px;" src="http://intra.cclind.com.br/Content/images/checkpt.png" border="0">'					+ CRLF
@@ -1204,7 +1205,7 @@ cHtml	+=	'<br>'       																															+ CRLF
 cHtml	+=	''       																																+ CRLF
 cHtml	+=	'<table border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#E5E5E5" bgcolor="#F7F7F7" width="100%">' 				+ CRLF
 cHtml	+=	'  <tr>' 																																+ CRLF
-if	cEmpAnt $ _cEmpAt1
+if	alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 31/05/2023 
 	cHtml	+=	' <td width="100%" bordercolor="#FFFFFF"><div align="right" class="texto-layer">WorkFlow @ CCL Industries </div></td>' 				+ CRLF
 else
 	cHtml	+=	' <td width="100%" bordercolor="#FFFFFF"><div align="right" class="texto-layer">WorkFlow @ Checkpoint     </div></td>' 				+ CRLF

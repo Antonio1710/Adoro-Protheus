@@ -48,6 +48,7 @@
 	@history ticket 102     - FWNM          - 27/08/2020 - WS BRADESCO 
 	@history Ticket 69574   - Abel Babini   - 25/04/2022 - Projeto FAI
 	@history ticket TI - Antonio Domingos - 24/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/
 User Function ADFIN018P()
 

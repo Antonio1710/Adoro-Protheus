@@ -19,9 +19,10 @@
 	@history ticket 102     - FWNM          - 27/08/2020 - WS BRADESCO 
 	@history Ticket 69574   - Abel Babini   - 25/04/2022 - Projeto FAI
 	@history ticket TI - Antonio Domingos - 24/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/	
 User Function ADFIN006P()
-
+	Local _xx
 	Local aArea		:= GetArea()
 	Local aAreaSC9  := SC9->(GetArea())
 	Local aRegSC6   := {}
@@ -38,8 +39,8 @@ User Function ADFIN006P()
 	Local _cQry     := ""
 	local _nOpc := 0
 	Local cPedidos := ""
-	Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
-	Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
+	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
+	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
 	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 24/05/2023
 	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 24/05/2023
 
@@ -1459,7 +1460,7 @@ Static function fdadosEml(_cMTV)
 Return()
 
 Static function fexctodos()
-
+	Local _zz
 	Local cPedidos := "" //Everson - 02/03/2018. Chamado 037261. SalesForce.
 	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
 	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI

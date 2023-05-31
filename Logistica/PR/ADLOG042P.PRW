@@ -71,7 +71,8 @@
 	@history Everson-20/07/2020-Ch:19127- Tratamento para geração de frete de subproduto na empresa Adoro 02 Filial 03 para subproduto.
 	@history Everson-13/06/2022-Chr:018465 - Removida a geração de frete de ração.
 	@history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
-    /*/    
+    @history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
+	/*/    
 User Function ADLOG042P( cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJA  , C5NUM , cOpc , C5DTENTR, lStorFr )
 	
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -83,6 +84,8 @@ User Function ADLOG042P( cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJ
 	Local cTpCrg 		:= ""
 	Local cRote 		:= ""	//Everson - 20/07/2021. Chamado 15478.
 	Private _cEmpFL1    := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigo de Empresas+Filiais Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
+	Private _cEmpFLH    := SuperGetMv("MV_#EMPFLH",.F.,"0103") //Codigos de Empresas+Filiais Ativas Grupo E //ticket TI - Antonio Domingos - 31/05/2023
+	Private _cEmpFLG    := SuperGetMv("MV_#EMPFLG",.F.,"0201") //Codigos de Empresas+Filiais Ativas Grupo J //ticket TI - William Costa - 31/05/2023
 
 	U_ADINF009P(SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))) + '.PRW',SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))),'Geração de frete a partir de emissão da Nota')
 
@@ -90,9 +93,9 @@ User Function ADLOG042P( cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJ
 	logZBE(" 1 - Geração de Frete " + cValToChar(cTpCrg) + " Emp/Filial " + cValToChar(cEmpAnt) + "/" + cValToChar(cFilAnt),"Pedido " + cValToChar(C5NUM) + " Nf " + F2DOC + " Serie " + F2SERIE)
 
 	//Everson - 07/02/2020. Chamado 054941.
-	If Alltrim(cEmpAnt) + Alltrim(cFilAnt) == "0103" .And. cOpc == "1"
+	//If Alltrim(cEmpAnt) + Alltrim(cFilAnt) == "0103" .And. cOpc == "1"
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFLH .And. cOpc == "1" //ticket TI - Antonio Domingos - 31/05/2023 
 		//U_ADLOG052P("1",cEmpAnt , cFilAnt )
-
 	EndIf
 
 	//Everson-20/01/2020-Ch:054941.
@@ -136,8 +139,8 @@ User Function ADLOG042P( cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJ
 		// U_ADLOG052P("2",cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJA  , C5NUM , cOpc , C5DTENTR, @lStorFr, lAutoJob) //Everson - 07/02/2020. Chamado 054941. //Everson - 13/06/2022. Chamado 018465.
 
 	ElseIf 	Alltrim(cEmpAnt) + Alltrim(cFilAnt)  $ _cEmpFL1 .Or.;
-			Alltrim(cEmpAnt) + Alltrim(cFilAnt) == "0201"
-			
+			Alltrim(cEmpAnt) + Alltrim(cFilAnt)  $ _cEmpFLG //ticket TI - Antonio Domingos - 31/05/2023 
+			//Alltrim(cEmpAnt) + Alltrim(cFilAnt) == "0201" //ticket TI - Antonio Domingos - 31/05/2023 
 			//Everson-10/09/2021-Ch:19127.
 			logZBE(" 3 - Geração de Frete " + cValToChar(cTpCrg) + " Emp/Filial " + cValToChar(cEmpAnt) + "/" + cValToChar(cFilAnt),"Pedido " + cValToChar(C5NUM) + " Nf " + F2DOC + " Serie " + F2SERIE)
 			//
@@ -145,7 +148,8 @@ User Function ADLOG042P( cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJ
 			U_ADLOG041P(cEmpAnt , cFilAnt , F2DOC , F2SERIE , F2CLIENTE , F2LOJA  , C5NUM , cOpc , C5DTENTR, @lStorFr, lAutoJob) //Everson - 21/01/2020. Chamado 054941.
 
 	//Everson-10/09/2021-Ch:19127.
-	ElseIf Alltrim(cEmpAnt) + Alltrim(cFilAnt) == "0103" .And.;
+	//ElseIf Alltrim(cEmpAnt) + Alltrim(cFilAnt) == "0103" .And.; //ticket TI - Antonio Domingos - 31/05/2023 
+	ElseIf Alltrim(cEmpAnt) + Alltrim(cFilAnt) $ _cEmpFLH .And.; //ticket TI - Antonio Domingos - 31/05/2023 
 			!Empty(cRote) //Everson - 12/08/2020. Chamado 059326. //Everson - 20/07/2021. Chamado 15478.
 			
 		//

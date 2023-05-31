@@ -20,6 +20,7 @@
 	@history ticket 73148 - Everson           - 31/05/2022 - Adicionar demais códigos como quebra de peso.
 	@history Ticket TI 	  - Fernando Macieira - 21/09/2022 - Preparação filial 0B
 	@history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
+	@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/
 User Function ADLOG006P()
 
@@ -33,7 +34,7 @@ User Function ADLOG006P()
 	//
 
 	Private nCont3  := 0
-	Private cEmpFL3 := SuperGetMv("MV#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - William Costa - 22/05/2023
+	Private _cEmpFL3 := " " //ticket TI - Antonio Domingos - 31/05/2023 
 
 	// ****************************INICIO PARA RODAR COM SCHEDULE**************************************** //	
 	RPCClearEnv()
@@ -62,14 +63,17 @@ User Function ADLOG006P()
 	//@history Ticket TI 	  - Fernando Macieira    - 21/09/2022 - Preparação filial 0B
     cEmpRun := GetMV("MV_#WSREMP",,"01")
     cFilRun := GetMV("MV_#WSRFIL",,"02|0B")
-
+	//ticket TI - Antonio Domingos - 31/05/2023 
+	_cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - William Costa - 22/05/2023
+	
 	// Carrega Empresas para processamentos
 	dbSelectArea("SM0")
 	dbSetOrder(1)
 	SM0->(dbGoTop())
 	Do While SM0->(!EOF())
 		//If (AllTrim(SM0->M0_CODIGO) $ cEmpRun) .and. (AllTrim(SM0->M0_CODFIL) $ cFilRun) // @history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
-		If Alltrim(SM0->M0_CODIGO)+Alltrim(SM0->M0_CODFIL) $ cEmpFL3  //ticket TI - William Costa - 22/05/2023 
+		//ticket TI - Antonio Domingos - 31/05/2023 
+		If Alltrim(SM0->M0_CODIGO)+Alltrim(SM0->M0_CODFIL) $ _cEmpFL3  //ticket TI - William Costa - 22/05/2023 
 			aAdd(aEmpresas, { AllTrim(SM0->M0_CODIGO), AllTrim(SM0->M0_CODFIL) } ) 
 		EndIf
 		SM0->( dbSkip() )

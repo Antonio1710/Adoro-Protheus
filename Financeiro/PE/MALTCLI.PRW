@@ -26,6 +26,7 @@
   @history Everson, 10/02/2023, Chamado 18465. Alterada função static function para user function.  
   @history Everson, 13/02/2023, Chamado 88406. Tratamento para mensagem de erro.  
   @history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+  @history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/
 User Function MALTCLI()
 
@@ -35,7 +36,7 @@ User Function MALTCLI()
 	Local aArea      := GetArea()
 	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
 	//
-	If FindFunction("U_ADVEN076") .And. cEmpAnt $ _cEmpAt1
+	If FindFunction("U_ADVEN076") .And. cEmpAnt $ _cEmpAt1 //ticket TI - Antonio Domingos - 31/05/2023 
 		U_ADVEN076("","",.F.," AND A1_COD = '" + Alltrim(cValToChar(A1_COD)) + "' AND A1_LOJA = '" + Alltrim(cValToChar(A1_LOJA)) + "' ","",.T.)
 	
 	EndIf

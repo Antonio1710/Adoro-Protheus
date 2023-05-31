@@ -14,6 +14,7 @@
     @history ticket SISTEMAS - Fernando Macieira - 15/09/2022 - Adaptação filial 0B
     @history Ticket T.I - Fernando Sigoli -  11/01/2022 - Se o titulo nao conseguir registrar, o job vai fazer tratativa de reenviar
     @history ticket TI - Antonio Domingos - 24/05/2023 - Ajuste Nova Empresa
+    @history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 /*/
 function u_ADFIN130P( aParms, nE1Id, lRpc )
 
@@ -43,7 +44,7 @@ function u_ADFIN130P( aParms, nE1Id, lRpc )
         // ticket TI - Fernando Macieira - 15/09/2022 - Adaptação filial 0B
         cEmp := GetMV("MV_#WSBEMP",,"01")
         cFil := GetMV("MV_#WSBFIL",,"02#0B")
-        _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301")
+        _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //ticket TI - Antonio Domingos - 31/05/2023 
         
         // Carrega Empresas para processamentos
         dbSelectArea("SM0")

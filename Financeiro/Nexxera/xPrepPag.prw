@@ -145,6 +145,7 @@ Static lGera422					:=	ExistBlock("XGERA422")
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 //@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+//@history ticket TI - Antonio Domingos - 31/05/2023 - Ajuste Nova Empresa
 User Function xPrepPag(lJob,lCarga,aPar,xPosFlg,xPosStt,xLogRet,lBorder,xArr,xDia,lDesmarca,xButAban)    
 
 Local aArr			:=	{}
@@ -8736,7 +8737,7 @@ cHtml	+=	'<table border="0" cellpadding="0" cellspacing="0" height="58" width="9
 cHtml	+=	'  <tbody>' 																																														+ CRLF
 cHtml	+=	'    <tr>' 																																															+ CRLF
 cHtml	+=	'      <td>'																																														+ CRLF
-if	cEmpAnt $ _cEmpAt1
+if	alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 31/05/2023 
 	cHtml	+=	'        <img style="width: 150px; height: 72px;" src="http://intra.cclind.com.br/Content/images/Logo_CCL_Assinatura.gif" border="0"> '															+ CRLF
 elseif	cEmpAnt == "02"
 	cHtml	+=	'        <img style="width: 180px; height: 44px;" src="http://intra.cclind.com.br/Content/images/checkpt.png" border="0">'																		+ CRLF
@@ -9113,7 +9114,7 @@ cHtml	+=	'<table border="0" cellpadding="0" cellspacing="0" height="58" width="1
 cHtml	+=	'  <tbody>' 																																														+ CRLF
 cHtml	+=	'    <tr>' 																																															+ CRLF
 cHtml	+=	'      <td>'																																														+ CRLF
-if	cEmpAnt $ _cEmpAt1
+if	alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 31/05/2023 
 	cHtml	+=	'        <img style="width: 150px; height: 72px;" src="http://intra.cclind.com.br/Content/images/Logo_CCL_Assinatura.gif" border="0"> '															+ CRLF
 elseif	cEmpAnt == "02"
 	cHtml	+=	'        <img style="width: 180px; height: 44px;" src="http://intra.cclind.com.br/Content/images/checkpt.png" border="0">'																		+ CRLF
@@ -9568,7 +9569,7 @@ cHtml	+=	'<table border="0" cellpadding="0" cellspacing="0" height="58" width="1
 cHtml	+=	'  <tbody>' 																																														+ CRLF
 cHtml	+=	'    <tr>' 																																															+ CRLF
 cHtml	+=	'      <td>'																																														+ CRLF
-if	cEmpAnt $ _cEmpAt1
+if	alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 31/05/2023 
 	cHtml	+=	'        <img style="width: 150px; height: 72px;" src="http://intra.cclind.com.br/Content/images/Logo_CCL_Assinatura.gif" border="0"> '															+ CRLF
 elseif	cEmpAnt == "02"
 	cHtml	+=	'        <img style="width: 180px; height: 44px;" src="http://intra.cclind.com.br/Content/images/checkpt.png" border="0">'																		+ CRLF
