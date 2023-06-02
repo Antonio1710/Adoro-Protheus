@@ -77,6 +77,7 @@
 	@history ticket 89538   - Antonio Domingos - 17/03/2023 - COMPENSAÇÃO ENTRE FILIAIS
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 24/05/2023 - Revisão Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function M410STTS()
 

@@ -22,14 +22,15 @@
 	@history Ticket 70142   - Rodrigo Mello/Flek- 10/06/2022 - Substituicao de funcao Static Call por User Function MP 12.1.33
 	@history Ticket 88813 - Antonio Domingos - 20/02/2023 - AMBIENTE DE PRODUÇÃO - ERROR LOG array out of bounds [2] of [0]  on U_MTA450I(MTA450I.PRW) 14/06/2022 15:20:46 line : 115
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function MTA450I()
 
 	Local _cStAntPed := ""
 	Local nOpc	     := PARAMIXB[1]
 	Local lAtuSAG    := SuperGetMv( "MV_#ATUSAG" , .F. , .F. ,  )
-	Local cEmpSF	:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Local cFilSF	:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cEmpSF	:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cFilSF	:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 
 	Local _cRisco 		:= '' 	//Ticket 1562    - Abel Babini       - 30/05/2022 - RELATORIO DE PEDIDOS LIBERADOS
 	Local cPerfPgt 		:= ''	//Ticket 1562    - Abel Babini       - 30/05/2022 - RELATORIO DE PEDIDOS LIBERADOS
@@ -45,8 +46,11 @@ User Function MTA450I()
 	Local _nTotAVenc  	:= 0
 	Local _nPedFut 		:= 0
 	Local _nTotRede 	:= 0
+	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 02/06/2023
+	Local _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 02/06/2023
 
-	If Alltrim(cEmpAnt) == "01"
+	//If Alltrim(cEmpAnt) == "01"
+	If Alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 02/06/2023 
 
 		_cDtEntr  := DTOC(SC5->C5_DTENTR)
 		_sDtEntr  := DTOS(SC5->C5_DTENTR)
@@ -311,8 +315,10 @@ User Function MTA450I()
 		ZBE->(MsUnlock())
 		
 		// Ricardo Lima - 07/03/18 - Atualiza SalesForce com status de aprovação ou reprovação de credito
-		If Findfunction("U_ADVEN050P") .And. nOpc == 4 .And. Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF
-	    	//if empty(SC9->C9_BLCRED)
+		//If Findfunction("U_ADVEN050P") .And. nOpc == 4 .And. Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF
+	    If Findfunction("U_ADVEN050P") .And. nOpc == 4 .And. Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 //ticket TI - Antonio Domingos - 02/06/2023 
+
+			//if empty(SC9->C9_BLCRED)
 	    	If Upper(Alltrim(cValToChar(GetMv("MV_#SFATUF")))) == "S"
 		    	U_ADVEN050P(,.F.,.T., " AND C5_NUM IN ('" + SC9->C9_PEDIDO + "') AND C5_XPEDSAL <> '' " ,.T.)
 		    	
@@ -320,7 +326,7 @@ User Function MTA450I()
 		EndIf	
 		
 		// *** INICIO CHAMADO WILLIAM 043390 || SUPRIMENTOS || LUIS || 3525 || APROV X SAG *** //
-		IF cEmpAnt $ _cEmpAt1
+		IF alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 02/06/2023 
 		
 			IF ALLTRIM(SC5->C5_PEDSAG) <> '' .AND. nOpc == 4
 			

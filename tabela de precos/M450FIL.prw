@@ -15,16 +15,18 @@ Static _dDTENTRB := CTOD("  /  /  ")
 	@history ticket T.I   - Mauricio      -            - Estadual do codigo 000001 a 000135. Demais codigos eh interestadual.
 	@history ticket T.I   - WILLIAM COSTA - 17/05/2023 - INCLUSAO DA EMPRESA 13
 	@history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 
 User Function M450FIL() 
 
 	Local _cFiltro := " .T."
+	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 02/06/2023
 
 	_dDTENTRA := MV_PAR03
 	_dDTENTRB := MV_PAR04
 
-	IF ALLTRIM(CEMPANT) $ SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 
+	IF ALLTRIM(CEMPANT) $ _cEmpAt1 //Codigo de Empresas Ativas Grupo 1 -  ticket TI - Antonio Domingos - 02/06/2023
 
 		If MV_PAR05 == 1  &&estadual 
 			_cFiltro := " (DTOS(SC9->C9_DTENTR) >= '" + Dtos(_dDtEntrA) + "' .and. DTOS(SC9->C9_DTENTR) <= '" + Dtos(_dDtEntrB)  + "') .And. (SC9->C9_VEND1 >= '000001' .AND. SC9->C9_VEND1 <= '000135') "

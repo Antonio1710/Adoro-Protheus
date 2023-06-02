@@ -23,6 +23,7 @@
 	@history ticket 90119	- Antonio Domingos - 10/04/2023 - PEDIDO DE FORNECEDOR BLOQUEANDO tipo B e D
 	@history ticket 90119	- Fernando Sigoli  - 11/04/2023 - declaração do campo C5_TIPO na query
 	@history ticket 90119	- Antonio Domingos - 18/04/2023 - PEDIDO DE FORNECEDOR NÃO BLOQUEAR ESTOQUE PARA tipo B e D
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 
 User Function AtuLimCred()
@@ -45,7 +46,7 @@ Static Function ProcAtu()
 	//Local cFilSF    := GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
 	//Local cEmpSF    := GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
 	//Local lVldInter	:= SuperGetMV("MV_#HEXINT",,.T.)
-	Private cEmpFL3 := SuperGetMv("MV#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - William Costa - 23/05/2023
+	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - William Costa - 23/05/2023
 	
 
 	MsProcTxt("Analisando Dados  .....")
@@ -245,7 +246,7 @@ Static Function ProcAtu()
 
 	// Ricardo Lima - 09/03/18 | Atualiza SalesForce com status de credito
 	//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL3 .And. Findfunction("U_ADVEN050P") //ticket TI - William Costa - 24/05/2023
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 .And. Findfunction("U_ADVEN050P") //ticket TI - William Costa - 24/05/2023
 		If Upper(Alltrim(cValToChar(GetMv("MV_#SFATUF")))) == "S"
 			U_ADVEN050P(,.F.,.T., " AND C5_NUM BETWEEN '" + Alltrim(mv_par03) + "' AND '" + Alltrim(mv_par04) + "' AND C5_CLIENTE BETWEEN '" + Alltrim(mv_par05) + "' AND '" + Alltrim(mv_par06) + "' AND C5_NOTA = '' AND C5_DTENTR BETWEEN '" + DTOS(mv_par01) + "' AND '" + DTOS(mv_par02) + "' AND C5_FLAGFIN = 'B' AND C5_XPEDSAL <> '' " ,.F.)
 		
@@ -275,7 +276,7 @@ Static Function ProcAtu()
 
 	// Ricardo Lima - 09/03/18 | Atualiza SalesForce com status de credito
 	//Ticket 69574   - Abel Babini          - 25/04/2022 - Projeto FAI
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL3 .And. Findfunction("U_ADVEN050P") //ticket TI - William Costa - 24/05/2023
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 .And. Findfunction("U_ADVEN050P") //ticket TI - William Costa - 24/05/2023
 		If Upper(Alltrim(cValToChar(GetMv("MV_#SFATUF")))) == "S"
 			U_ADVEN050P(,.F.,.T., " AND C5_NUM BETWEEN '" + Alltrim(mv_par03) + "' AND '" + Alltrim(mv_par04) + "' AND C5_CLIENTE BETWEEN '" + Alltrim(mv_par05) + "' AND '" + Alltrim(mv_par06) + "' AND C5_NOTA = '' AND C5_DTENTR BETWEEN '" + DTOS(mv_par01) + "' AND '" + DTOS(mv_par02) + "' AND C5_FLAGFIN = 'L' AND C5_XPEDSAL <> '' " ,.T.)				
 

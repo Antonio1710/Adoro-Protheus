@@ -18,6 +18,7 @@
 	@history chamado TI 	- Fernando Macieira - 04/07/2022 - SD1 está sendo disposicionado, interferindo nos d+ PEs e no negócio
 	@history Ticket 85817 - Abel Babini       - 09/01/2023 - Ajuste campo N1_PROJETO para N1_XPROJET
     @history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 
 User Function GQREENTR()

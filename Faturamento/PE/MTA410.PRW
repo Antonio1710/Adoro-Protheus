@@ -12,6 +12,7 @@
 	@hsitory Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	@history ticket TI - Antonio Domingos - 22/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 25/05/2023 - Revisão Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 */
 
 User Function MTA410
@@ -207,6 +208,7 @@ Static Function CliFor_OK()
 
 	Local _lRet:=.T.
 	//Local cFilRN:= GetMv("MV_#RNFIL",,"02|06|07|0B")//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	Local _cEmpFL6 := SuperGetMv("MV_#EMPFL6",.F.,"0102|0106|0107|010B|1301") //Codigos de Empresas+Filiais Ativas Grupo 6//ticket TI - Antonio Domingos - 02/06/2023
 
 	//IF (Alltrim(xFilial("SC5")) $ cFilRN) .and. ALLTRIM(CEMPANT)=="01" //ALTERADO LEONARDO (HC) PARA CONTEMPLAR FILIAL 06 - ITUPEVA //incluida filial 07 em 13/08/14
 	If Alltrim(cEmpAnt)+Alltrim(xFilial("SC5")) $ _cEmpFL6  //ticket TI - Antonio Domingos - 22/05/2023 
@@ -580,6 +582,7 @@ Static Function Transp_OK()
 
 	Local _lRet:=.T.
 	//Local cFilRN:= GetMv("MV_#RNFIL",,"02|06|07|0B") //Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	Local _cEmpFL6 := SuperGetMv("MV_#EMPFL6",.F.,"0102|0106|0107|010B|1301") //Codigos de Empresas+Filiais Ativas Grupo 6//ticket TI - Antonio Domingos - 02/06/2023
 
 	//if Alltrim(xFilial("SC5")) $ cFilRN .and. ALLTRIM(CEMPANT)=="01" //incluida filial 07 em 13/08/14
 	If Alltrim(cEmpAnt)+Alltrim(xFilial("SC5")) $ _cEmpFL6  //ticket TI - Antonio Domingos - 22/05/2023 

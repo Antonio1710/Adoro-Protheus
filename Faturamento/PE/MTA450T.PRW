@@ -10,11 +10,12 @@
 	@since 01/08/02
 	@history Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	@history ticket TI - Antonio Domingos - 22/05/2023 - Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Valida豫o Ajuste Nova Empresa
 	/*/
 User Function MTA450T()      // DELMTA450T()  RENOMEADA PARA DEL PARA TESTAR 
 	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 22/05/2023
+	Local _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 22/05/2023
 
 	//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
 	//� Guarda ambiente inicial                                                  �

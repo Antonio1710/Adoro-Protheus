@@ -9,6 +9,7 @@
 	@version 01
 	@history Chamado:047834 Fernando sigoli 13/03/2019 - Tratamento para nao validar notas do TIpo CTE, pois integra classificada.
 	@history Chamado: T.I.  Everson 17/07/2020 - Substituída função TcLink por LinkedServer.
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 	/*/
 User Function MT103INC()
 

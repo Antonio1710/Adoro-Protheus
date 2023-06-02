@@ -66,6 +66,7 @@
 	@history ticket TI - Antonio Domingos - 20/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 23/05/2023 - Revisão Ajuste Nova Empresa
 	@history ticket 94010 - 25/05/2023 - Fernando Macieira - EMPRESAS NOVAS (EMPRESAS 11, 12 E 13) - ITEM CONTÁBIL 221
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/ 
 User Function MT100LOK
 
@@ -229,7 +230,7 @@ User Function MT100LOK
 	*/
 	
 	//IF CEMPANT = '01' //regra valida apenas para a empresa 01- Adoro
-	IF CEMPANT $ _cEmpAt1 //ticket TI - Antonio Domingos - 20/05/2023 
+	IF alltrim(CEMPANT) $ _cEmpAt1 //ticket TI - Antonio Domingos - 20/05/2023 
 
 		If !(AllTrim(gdFieldGet("D1_CF",n)) $ cCFOTransf) // @history Ticket 90838 - 19/04/2023 - Fernando Macieira - TRANSFERENCIA DE ITENS DE ALMOXARIFADO - MATRIZES
 		
@@ -640,12 +641,12 @@ User Function MT100LOK
 						Else //todos os demais grupos
 							//Ticket 92161 - Jonathan Carvalho - 17/04/2023
 							//If cEmpAnt == '01'	
-							IF CEMPANT $ _cEmpAt1 //ticket TI - Antonio Domingos - 20/05/2023
+							IF alltrim(CEMPANT) $ _cEmpAt1 //ticket TI - Antonio Domingos - 20/05/2023
 								//Ticket 91797 - Jonathan Carvalho - 13/04/2023
 								dbSelectAreA("ZIN")
 								dbSetOrder(1)
 								If dbSeek( FWxFilial("ZIN") + cNotazin + cSerizin + cFornzin + cLojazin )
-									If Round( (nVlrttnf + nVlrnflc) ,2) > Round( (nTotPed + (nTotPed * (GETMV("MV_#FAT636")/100))) ,2)
+									If Round( (nVlrttnf + nVlrnflc) ,2) > Round( (nTotPed + (nTotPed * (SUPERGETMV("MV_#FAT636",.F.,1)/100))) ,2) //ticket TI - Antonio Domingos - 02/06/2023
 										Aviso("MT100LOK-23", cErroTot, { "&Retorna" },,"Valor Entradas > Valor Pedido "+STR_LF+"Tolerancia: "+STR(GETMV("MV_#FAT636"),5,2) )
 										nVlrttnf := 0
 										RestArea(_aArea)

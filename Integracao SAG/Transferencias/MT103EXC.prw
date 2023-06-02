@@ -19,6 +19,7 @@
 	@history ticket 18465   - Everson - 13/01/2023 - Removida validação de exclusão.
 	@history ticket 18465   - Everson - 16/01/2023 - Atualiza registro na rotina de entrada de matéria-prima..
     @history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function MT103EXC()
 
