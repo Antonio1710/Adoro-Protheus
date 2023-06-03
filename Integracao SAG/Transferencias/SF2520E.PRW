@@ -17,6 +17,7 @@
 	@history ticket 72339 - Fernando Macieira - 04/05/2022 - workflow - ACOMPANHAMENTO DAS NOTAS FISCAIS DE FRANGO VIVO
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
     @history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function SF2520E()
 
@@ -38,10 +39,10 @@ User Function SF2520E()
 	Local sFilRc    := SuperGetMv( "MV_#M46F1" , .F. , '' ,  ) // Ricardo Lima - 17/10/18
 	Local sCliRc    := SuperGetMv( "MV_#M46F2" , .F. , '' ,  ) // Ricardo Lima - 17/10/18
 	//Local cFilGFrt  := Alltrim(SuperGetMv( "MV_#M46F5" , .F. , '' ,  )) // Ricardo Lima-19/11/18|CH:044314
-	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
-	Private _cEmpFL5 := SuperGetMv("MV_#EMPFL5",.F.,"1301|0103|010A") //Codigo de Empresas+Filiais Ativas Grupo //ticket TI - Antonio Domingos - 26/05/2023
+	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
+	Local _cEmpFL5 := SuperGetMv("MV_#EMPFL5",.F.,"1301|0103|010A") //Codigo de Empresas+Filiais Ativas Grupo //ticket TI - Antonio Domingos - 26/05/2023
 	//
-	If cEmpAnt $ _cEmpAt1 //ticket TI - Antonio Domingos - 26/05/2023
+	If alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 26/05/2023
 
 		grvBarr("D", SF2->F2_DOC+SF2->F2_SERIE+SF2->F2_CLIENTE+SF2->F2_LOJA, SF2->F2_DOC, SF2->F2_SERIE) //Everson, 22/03/2022, Chamado 18465.
 	
@@ -65,7 +66,7 @@ User Function SF2520E()
 						//If AllTrim(SF2->F2_FILIAL) == cFilGranjas .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV  .and. AllTrim(SC5->C5_XLFVCMP) == "S"  // @history ticket 71972 - Fernando Macieira - 28/04/2022 - Complemento Frango Vivo - Granja HH - Filial 0A
 						//If AllTrim(SF2->F2_FILIAL) $ cFilGranjas .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV  .and. AllTrim(SC5->C5_XLFVCMP) == "S"
 						//ticket TI - Antonio Domingos - 13/05/2023 
-						If cEmpAnt+AllTrim(SF2->F2_FILIAL) $ _cEmpFL5  .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV  .and. AllTrim(SC5->C5_XLFVCMP) == "S"
+						If alltrim(cEmpAnt)+AllTrim(SF2->F2_FILIAL) $ _cEmpFL5  .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV  .and. AllTrim(SC5->C5_XLFVCMP) == "S"
 							msAguarde( { || ExcPreNFE() }, "Excluindo Pré-Nota Entrada Complemento Frango Vivo (SF2520E)" )
 						EndIf
 						
@@ -74,7 +75,7 @@ User Function SF2520E()
 						//If AllTrim(SF2->F2_FILIAL) == cFilGranjas .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV // @history ticket 71972 - Fernando Macieira - 28/04/2022 - Complemento Frango Vivo - Granja HH - Filial 0A
 						//ticket TI - Antonio Domingos - 13/05/2023 
 						//If AllTrim(SF2->F2_FILIAL) $ cFilGranjas .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV
-						If cEmpAnt+AllTrim(SF2->F2_FILIAL) $ _cEmpFL5 .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV
+						If alltrim(cEmpAnt)+AllTrim(SF2->F2_FILIAL) $ _cEmpFL5 .and. AllTrim(SF2->F2_CLIENTE) == cCliCod .and. AllTrim(SF2->F2_LOJA) == cCliLoj .and. AllTrim(SD2->D2_COD) == cProdPV .and. AllTrim(SD2->D2_TES) == cTESPV
 							msAguarde( { || ExcPreNFE() }, "Excluindo Pré-Nota Entrada Complemento Frango Vivo (SF2520E)" )
 						EndIf
 					

@@ -13,11 +13,13 @@
 	@since 11/01/2022
     @history ticket SISTEMAS - Fernando Macieira - 15/09/2022 - Adaptação filial 0B
     @history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
+    @history ticket TI - Antonio Domingos - 03/06/2023 - Validação Ajuste Nova Empresa
 /*/
 function u_ADFIN128P( aParms, nE1Id, lRpc )
 
     local cEmp := ""
     local cFil := ""
+    Local _cEmpFL3 := " " //ticket TI - Antonio Domingos - 03/06/2023 
 
     // @history ticket SISTEMAS - Fernando Macieira - 15/09/2022 - Adaptação filial 0B
     Local i
@@ -40,15 +42,17 @@ function u_ADFIN128P( aParms, nE1Id, lRpc )
         PREPARE ENVIRONMENT EMPRESA cEmp FILIAL cFil MODULO 'FIN'
 
         // ticket TI - Fernando Macieira - 15/09/2022 - Adaptação filial 0B
-        cEmp := GetMV("MV_#WSBEMP",,"01")
-        cFil := GetMV("MV_#WSBFIL",,"02#0B")
+        cEmp     := GetMV("MV_#WSBEMP",,"01")
+        cFil     := GetMV("MV_#WSBFIL",,"02#0B")
+        _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 03/06/2023
 
         // Carrega Empresas para processamentos
         dbSelectArea("SM0")
         dbSetOrder(1)
         SM0->(dbGoTop())
         Do While SM0->(!EOF())
-            If (AllTrim(SM0->M0_CODIGO) $ cEmp) .and. (AllTrim(SM0->M0_CODFIL) $ cFil)
+            //If (AllTrim(SM0->M0_CODIGO) $ cEmp) .and. (AllTrim(SM0->M0_CODFIL) $ cFil)
+            If (AllTrim(SM0->M0_CODIGO)+AllTrim(SM0->M0_CODFIL) $ _cEmpFL3) //ticket TI - Antonio Domingos - 03/06/2023 
                 aAdd(aEmpresas, { AllTrim(SM0->M0_CODIGO), AllTrim(SM0->M0_CODFIL) } ) // @history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
             EndIf
             SM0->( dbSkip() )

@@ -65,6 +65,7 @@
 	@history Everson, 15/03/2023, ticket TI    - Tratamento Errorlog.
 	@history Ticket 93225 	- Antonio Domingos - 04/05/2023 - Pedido não apresenta em roteiro
     @history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function M460FIM()
 
@@ -87,24 +88,12 @@ User Function M460FIM()
 	Local cCrgAgr	  := Iif(FieldPos("C5_XCAGRUP") > 0,  Alltrim(cValToChar(SC5->C5_XCAGRUP)) , "") //Everson - 14/03/2023 - ticket TI.
 	Local cPlcAgr	  := Iif(FieldPos("C5_XPAGRUP") > 0,  Alltrim(cValToChar(SC5->C5_XPAGRUP)) , "") //Everson - 14/03/2023 - ticket TI.
 	//
-	
 	Private cMostraErro 
-<<<<<<< HEAD
-	Private cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
-	Private cEmpFL1  := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
-	Private cEmpFL3  := SuperGetMv("MV#_EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 20/05/2023
-	Private cEmpFL7  := SuperGetMv("MV#_EMPFL7",.F.,"010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 7 //ticket TI - William Costa - 20/05/2023
-	Private cEmpFLA  := SuperGetMv("MV#_EMPFLA",.F.,"0102/0103/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo A //ticket TI - William Costa - 20/05/2023
-=======
-	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
-	Private cEmpFL1  := SuperGetMv("MV#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
-	Private cEmpFL3  := SuperGetMv("MV#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 20/05/2023
-	Private cEmpFL7  := SuperGetMv("MV#EMPFL7",.F.,"010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 7 //ticket TI - William Costa - 20/05/2023
-	Private cEmpFLA  := SuperGetMv("MV#EMPFLA,.F.,"0102/0103/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo A //ticket TI - William Costa - 20/05/2023
-<<<<<<< HEAD
->>>>>>> parent of 37e4ce05 (ticket TI - Antonio Domingos - 29/05/2023 - RevisÃ£o Ajuste Nova Empresa)
-=======
->>>>>>> parent of 37e4ce05 (ticket TI - Antonio Domingos - 29/05/2023 - RevisÃ£o Ajuste Nova Empresa)
+	Private _cEmpAt1  := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
+	Private _cEmpFL1  := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
+	Private _cEmpFL3  := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 20/05/2023
+	Private _cEmpFL7  := SuperGetMv("MV_#EMPFL7",.F.,"010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 7 //ticket TI - William Costa - 20/05/2023
+	Private _cEmpFLA  := SuperGetMv("MV_#EMPFLA",.F.,"0102/0103/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo A //ticket TI - William Costa - 20/05/2023
 
    // ticket 84085 - 01/12/2022 - Fernando Macieira - TRANSFERENCIA DE ATIVO IMOBILIZADO nota fiscal não aparece no Faturamento
 	If AllTrim(FUNNAME())=="ATFA060" .or. IsInCallStack("ATFA060")
@@ -120,7 +109,7 @@ User Function M460FIM()
 	//Ricardo Lima-CH:044314-19/11/18
 	//Everson-CH:044314-30/05/19.
 	//Everson-CH:044314-06/08/19.
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFLA //.And. ! ISINCALLSTACK("U_CCSP_002") //Everson-CH:044314-03/06/19. //Everson-CH:044314-12/06/19. //ticket TI - William Costa - 20/05/2023
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFLA //.And. ! ISINCALLSTACK("U_CCSP_002") //Everson-CH:044314-03/06/19. //Everson-CH:044314-12/06/19. //ticket TI - William Costa - 20/05/2023
 	
 		//Everson-CH:044314-15/04/19.
 		//Everson - 09/04/2019. Chamado 044314.
@@ -135,7 +124,7 @@ User Function M460FIM()
 	//Fim-Everson-CH:044314-15/04/19.
 
 	//
-	If Alltrim(cEmpAnt) $ cEmpAt1 //ticket TI - William Costa - 20/05/2023
+	If Alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - William Costa - 20/05/2023
 
 		//Everson - 07/10/2022 - Ticket 80379.
 		If !Empty(cCrgAgr)
@@ -667,6 +656,8 @@ Static function fGrvVend2()
 	Local cFilSF		:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	Local cEmpSF		:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	Local cLnkSrv		:= Alltrim(SuperGetMV("MV_#UEPSRV",,"LNKMIMS")) //Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	Local _cEmpFL1 := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - Antonio Domingos - 02/06/2023
+	Local _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 02/06/2023
 
 	_cNOTA    	:=	SF2->F2_DOC
 	_cSERIE   	:=	SF2->F2_SERIE
@@ -703,14 +694,14 @@ Static function fGrvVend2()
 
 	//chamado : 036627 - Fernando Sigoli  10/08/2017
 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL3 //ticket TI - William Costa - 20/05/2023
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 //ticket TI - William Costa - 20/05/2023
 
 		If nRecnoSc5 > 0 
 
 			//BeginTran()
 
 			//Executa a Stored Procedure
-			If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL1 //ticket TI - William Costa - 20/05/2023
+			If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL1 //ticket TI - William Costa - 20/05/2023
 				TcSQLExec('EXEC ['+cLnkSrv+'].[SMART].[dbo].[FU_PEDIDO_FATURA] ' +Str(nRecnoSc5)+","+"'"+cEmpAnt+"'")
 			Else
 				TcSQLExec('EXEC ['+cLnkSrv+'].[SMART].[dbo].[FU_PEDIDO_FATURA] ' +Str(nRecnoSc5)+","+"'"+cEmpAnt+"','"+cFilAnt+"'" )
@@ -768,8 +759,9 @@ Static Function updEdata(cNF,cSerie,cCliente,cLoja)
 	Local aArea	    := GetArea()
 	Local cQuery	:= ""
 	Local cLnkSrv		:= Alltrim(SuperGetMV("MV_#UEPSRV",,"LNKMIMS")) //Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL1 //ticket TI - William Costa - 20/05/2023
+	Local _cEmpFL1 := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - Antonio Domingos - 02/06/2023
+
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL1 //ticket TI - William Costa - 20/05/2023
 
 		cQuery := ""
 		cQuery += " SELECT  " 
@@ -910,7 +902,8 @@ Static Function GeraPreNFE()
 	Local cTESPre   := ''//GetMV("MV_#LFVTEE",,"031") //Ch:055979 - Abel Babini			- 28/02/20 - COMPLEMENTO FRANGO VIVO - Retirada da TES para não gerar erro nos filtros das outras rotinas do processo (INTNFEB)
 
 	Local cF1Origem := GetMV("MV_#LFVSF1",,"FRANGOVI") // Chamado n. 048580 || OS 049871 || FISCAL || DEJAIME || 8921 || REL. WOKFLOW - FWNM - 13/05/2019
-
+	Local _cEmpFL7 := SuperGetMv("MV_#EMPFL7",.F.,"010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 7 //ticket TI - Antonio Domingos - 02/06/2023
+	
 	// @history ticket   74568 - Fernando Macieira - 15/06/2022 - Nova Granja - filial 03, fornecedor 000217, filial 0A, fornecedor 030057
 	If AllTrim(cFilAnt) == "0A" // @history ticket 75082 - Fernando Macieira - 21/06/2022 - ERROR LOG M460FIM
 		cFornCod := GetMV("MV_#LFVGHH",,"030057")
@@ -918,7 +911,7 @@ Static Function GeraPreNFE()
 	//
 
 	// @history ticket 71057 - Fernando Macieira - 08/04/2022 - Item contábil Lançamentos da Filial 0B - Itapira
-	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ cEmpFL7 //ticket TI - William Costa - 20/05/2023
+	If Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL7 //ticket TI - William Costa - 20/05/2023
 		cItemCtb := AllTrim(GetMV("MV_#ITACTD",,"125"))
 	EndIf
 	//

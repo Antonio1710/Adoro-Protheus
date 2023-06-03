@@ -15,6 +15,7 @@
 	@history ticket 71027   - Fernando Macieira - 07/04/2022 - Liberação Pedido Antecipado sem Aprovação Financeiro - PV 9BEGCC foi incluído depois que o job do boleto parou, não gerou FIE e SE1 (PR) e foi liberado manualmente pelo financeiro, sendo faturado como pv normal... por isso da dupla checagem
 	@history ticket TI - Antonio Domingos - 20/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 24/05/2023 - Revisão Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 03/06/2023 - Validação Ajuste Nova Empresa
 /*/	
 User Function M410PVNF()
                                   
@@ -26,10 +27,9 @@ User Function M410PVNF()
 	Local _aAreaSC5	:=SC5->(GetArea())
 	Local _aAreaSC6	:=SC6->(GetArea())
 	Local _aAreaSA1	:=SA1->(GetArea())
-	Local cEmpSF:= GetMv("MV_#SFEMP",,"01|13") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|13") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
+	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 20/05/2023
-	Private _cEmpAt3 := SuperGetMv("MV_#EMPAT3",.F.,"01/09/13") //Codigo de Empresas Ativas Grupo 3 //ticket TI - Antonio Domingos - 23/05/2023
 	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 20/05/2023
 
 	// Chamado n. 056247 || OS 057671 || FINANCEIRO || LUIZ || 8451 || BOLETO BRADESCO WS - FWNM - 09/04/2020
@@ -90,8 +90,8 @@ User Function M410PVNF()
 	Endif
 
 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	If !(Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF) //ticket TI - Antonio Domingos - 24/05/2023
-	//If !Alltrim(cEmpAnt) $ _cEmpAt3 //ticket TI - Antonio Domingos - 20/05/2023 
+	//If !(Alltrim(cEmpAnt) $ cEmpSF .And. Alltrim(cFilAnt) $ cFilSF) //ticket TI - Antonio Domingos - 24/05/2023
+	If !Alltrim(cEmpAnt)+Alltrim(cFilAnt) $ _cEmpFL3 //ticket TI - Antonio Domingos - 20/05/2023 
 		lRet := .T.
 	Endif
 	

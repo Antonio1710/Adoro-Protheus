@@ -10,7 +10,8 @@
 	@history Chamado 046817 - Everson - 30/01/2019 - Valida exclusão da nota fiscal pelo parâmetro MV_SPEDEXC.
 	@history Chamado 059025 - Abel    - 30/06/2020 - Valida se a Emissão da NF está  dentro do parâmetro MV_#DTEMIS
 	@history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
-    /*/
+    @history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
+	/*/
 User Function MS520VLD
 
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -24,7 +25,7 @@ User Function MS520VLD
 	Local lContinua :=.F.
 	Local nHorCanc	:= GetMv("MV_SPEDEXC",,24) //Everson - 30/01/2019. Chamado 046817.
 	Local dDtLEmis	:= GetMV('MV_#DTEMIS') //Chamado 059025 - Abel    - 30/06/2020 - Valida se a Emissão da NF está  dentro do parâmetro MV_#DTEMIS
-	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
+	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - William Costa - 20/05/2023
 
 	//Everson - 30/01/2019. Chamado 046817.
 	If ! Empty(Alltrim(cValToChar(SF2->F2_DAUTNFE))) .And. ! Empty(Alltrim(cValToChar(SF2->F2_HAUTNFE)))
@@ -39,7 +40,7 @@ User Function MS520VLD
 		
 	EndIf
 	//
-
+	
 	//INICIO Chamado 059025 - Abel    - 30/06/2020 - Valida se a Emissão da NF está  dentro do parâmetro MV_#DTEMIS
 	IF SF2->F2_EMISSAO <= dDtLEmis
 		MsgStop("Nota fiscal não pode ser excluída/cancelada, pois a data de emissão está bloqueada, Consulte o Depto. Fiscal (MV_#DTEMIS).","Função MS520VLD-2")

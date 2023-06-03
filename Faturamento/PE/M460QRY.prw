@@ -26,6 +26,7 @@
 	@history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
 	@history ticket TI - Antonio Domingos - 20/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 25/05/2023 - Revisão Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function M460QRY()
 

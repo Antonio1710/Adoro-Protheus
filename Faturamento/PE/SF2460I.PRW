@@ -42,6 +42,7 @@
 	@history Ticket TI		- Everson - 14/03/2023 - Tratamento para errorlog.
 	@history Ticket 93225 	- Antonio Domingos - 04/05/2023 - Pedido não apresenta em roteiro
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function SF2460I()
 
@@ -77,7 +78,7 @@ User Function SF2460I()
 	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1 //ticket TI - Antonio Domingos - 26/05/2023
 	//Chamado: 057085 - Abel Babini      - 01/04/20 - Criação de Parâmetro para controlar a geração de GNRE de ICMS ST dos clientes
 	Private lMVCLGST		:= GETMV("MV_#CLGNRE",,.F.) //Gera Título e Guia de Recolhimento do ICMS ST dos clientes
-	
+	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigos de Empresas+Filiais Ativas Grupo 3 //ticket TI - Antonio Domingos - 02/06/2023
    // ticket 84085 - 01/12/2022 - Fernando Macieira - TRANSFERENCIA DE ATIVO IMOBILIZADO nota fiscal não aparece no Faturamento
 	If AllTrim(FUNNAME())=="ATFA060" .or. IsInCallStack("ATFA060")
 		Return
@@ -112,13 +113,13 @@ User Function SF2460I()
 	// Chamado n. 059092 || OS 060609 || FISCAL || ANDRESA || 8423 || ERRO LOG MSRUNLOCK - FWNM - 23/06/2020
 	dbSelectArea("SF2")
 
-	If AllTrim(cEmpAnt) $ _cEmpAt1
+	If AllTrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 02/06/2023 
 		aDadVol := u_VerVolume(SF2->F2_FILIAL,SF2->F2_SERIE,SF2->F2_DOC) //Incluido por Adriana em 11/08/2017 - chamado 036402
 	EndIf
 
 	//Everson - 14/03/2023 - ticket TI.
 	// Retorna dados do processo de exportação coletados pela qualidade.
-	if cEmpAnt $ _cEmpAt1 .And. AllTrim(SF2->F2_EST) == "EX"
+	if alltrim(cEmpAnt) $ _cEmpAt1 .And. AllTrim(SF2->F2_EST) == "EX" //ticket TI - Antonio Domingos - 02/06/2023 
 		fGetInfo(SC5->C5_FILIAL, SC5->C5_NUM, @cRePlac, @cReCont, @cReDtFa, @cReLac1, @cReLac2)
 		// Gerar log das informações de exportação gravadas na NFe.
 		u_GrLogZBE(Date(),TIME(),cUserName,"GetInfo","SIGAFAT","SF2460I",;
@@ -350,8 +351,8 @@ User Function SF2460I()
 	
 	// Chamado n. 059092 || OS 060609 || FISCAL || ANDRESA || 8423 || ERRO LOG MSRUNLOCK - FWNM - 23/06/2020
 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	If Alltrim(FWxFilial("SC5")) $ cFilSF .and. AllTrim(cEmpAnt) == cEmpSF
-	
+	//If Alltrim(FWxFilial("SC5")) $ cFilSF .and. AllTrim(cEmpAnt) == cEmpSF 
+	If AllTrim(cEmpAnt)+Alltrim(FWxFilial("SC5")) $ _cEmpFL3 //ticket TI - Antonio Domingos - 02/06/2023 
 		SC9->( dbSetOrder(1) )
 		If SC9->( dbSeek(FWxfilial("SC9")+SC5->C5_NUM) )
 	
@@ -1727,7 +1728,7 @@ Return
 	@see (links_or_references)
 /*/
 Static Function BarraDV()
-
+	Local i
 	Do Case
 
 		Case cE1PORTADO == "001"			// Banco do Brasil
@@ -2498,7 +2499,7 @@ Static Function GravaNFORI()
 		MsUnlock()
 
 	ENDIF                  
-	SC5->(dbCloseArea())
+	//SC5->(dbCloseArea()) //ticket TI - Antonio Domingos - 03/06/2023 
 
 Return(NIL)
 
@@ -2765,11 +2766,10 @@ Static Function fAjustaCDD()
 				SD2->(DbSkip())	
 			EndDo	
 		EndIf
+		RestArea(aAreaCDT)
+		RestArea(aAreaCDD)
+		RestArea(aArea)
 	EndIf
-
-	RestArea(aAreaCDT)
-	RestArea(aAreaCDD)
-	RestArea(aArea)
 
 Return
 

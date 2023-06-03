@@ -17,6 +17,7 @@
 	@history Everson, 07/12/2022, ticket TI - removido envio de dados ao Salesforce.
 	@history ticket 89880 - 27/03/2023 - Fernando Macieira - Transferência entre Filiais
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function M521DNFS()
 
@@ -31,7 +32,7 @@ User Function M521DNFS()
 	// EndIf
 	
 	//Everson - 20/11/2018.
-	If cEmpAnt $ _cEmpAt1
+	If alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 02/06/2023 
 		flagSag(Alltrim(cValToChar(SF2->F2_DOC)),Alltrim(cValToChar(SF2->F2_SERIE)))
 		
 		//Everson 14/05/2019 chamado 044314.

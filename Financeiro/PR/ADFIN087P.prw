@@ -49,6 +49,7 @@
 	@history ticket 70142 	- Rodrigo Mello 		- 22/03/2022 - Substituicao de funcao PTInternal por FWMonitorMsg MP 12.1.33
 	@history ticket TI   	- Fernando Macieira     - 07/06/2022 - Chave duplicada no PIX - SE1
 	@history ticket 85037 	- Antonio Domingos      - 20/12/2022 - Ajuste de Filial - BAIXA AUTOMATICA PEDIDOS ANTECIPADO - BOLETOS.
+	@history ticket TI 		- Antonio Domingos 		- 03/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function ADFIN087P()
 
@@ -64,6 +65,7 @@ User Function ADFIN087P()
 	Local cCodRet69  := ""
 	local i
 	locaL cCondPixLnk := ""
+	Local _cEmpFL1    := " " //ticket TI - Antonio Domingos - 03/06/2023 
 
 	// Inicializo ambiente
 	rpcClearEnv()
@@ -88,15 +90,17 @@ User Function ADFIN087P()
 
 	U_ADINF009P(SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))) + '.PRW',SUBSTRING(ALLTRIM(PROCNAME()),3,LEN(ALLTRIM(PROCNAME()))),'Rotina job para geracao boleto de adiantamento do PV')
 
-    cEmpRun := GetMV("MV_#WSBEMP",,"01")
-    cFilRun := GetMV("MV_#WSBFIL",,"02")
+    cEmpRun  := GetMV("MV_#WSBEMP",,"01")
+    cFilRun  := GetMV("MV_#WSBFIL",,"02")
+	_cEmpFL1 := SuperGetMv("MV_#EMPFL1",.F.,"0102/1301") //Codigos de Empresas+Filiais Ativas Grupo 1 //ticket TI - Antonio Domingos - 03/06/2023
 
 	// Carrega Empresas para processamentos
 	dbSelectArea("SM0")
 	dbSetOrder(1)
 	SM0->(dbGoTop())
 	Do While SM0->(!EOF())
-		If (Alltrim(SM0->M0_CODIGO) $ cEmpRun) .and. (Alltrim(SM0->M0_CODFIL) $ cFilRun)
+		//If (Alltrim(SM0->M0_CODIGO) $ cEmpRun) .and. (Alltrim(SM0->M0_CODFIL) $ cFilRun)
+		If (Alltrim(SM0->M0_CODIGO)+Alltrim(SM0->M0_CODFIL) $ _cEmpFL1) //ticket TI - Antonio Domingos - 03/06/2023 
 			aAdd(aEmpresas, { Alltrim(SM0->M0_CODIGO), Alltrim(SM0->M0_CODFIL) } )
 		EndIf
 		SM0->( dbSkip() )

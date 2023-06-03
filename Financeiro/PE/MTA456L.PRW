@@ -6,6 +6,7 @@
 	@history 09/03/18 | Ricardo Lima      | Atualiza SalesForce                        | 
 	@history Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	@history ticket TI - Antonio Domingos - 23/05/2023 - Ajuste Nova Empresa
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 */
 User Function MTA456L()
 

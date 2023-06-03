@@ -17,6 +17,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 @history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
+@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 
 User Function MTA456I()      // DELMTA450T()  RENOMEADA PARA DEL PARA TESTAR
@@ -54,7 +55,7 @@ User Function MTA456I()      // DELMTA450T()  RENOMEADA PARA DEL PARA TESTAR
 		Endif
 		
 		// *** INICIO CHAMADO WILLIAM 043390 || SUPRIMENTOS || LUIS || 3525 || APROV X SAG *** //
-		IF cEmpAnt $ _cEmpAt1
+		IF alltrim(cEmpAnt) $ _cEmpAt1 //ticket TI - Antonio Domingos - 02/06/2023 
 		
 			IF ALLTRIM(SC5->C5_PEDSAG) <> '' 
 			

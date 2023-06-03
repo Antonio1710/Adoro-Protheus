@@ -19,6 +19,7 @@
 	@history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
 	@history ticket TI - Antonio Domingos - 20/05/2023 - Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 25/05/2023 - Revisão Ajuste Nova Empresa 1634
+	@history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
 /*/
 User Function M460fil()        // incluido pelo assistente de conversao do AP5 IDE em 23/08/00   
 
@@ -36,7 +37,7 @@ User Function M460fil()        // incluido pelo assistente de conversao do AP5 I
 	If AllTrim(FUNNAME())=="ATFA060" .or. IsInCallStack("ATFA060")
 		Return cFilSC9
 	EndIf
-
+	//ticket TI - Antonio Domingos - 02/06/2023 
 	//IF (AllTrim(SM0->M0_CODFIL) <> '03' .and. (ALLTRIM(CEMPANT)=="01"  .or. ALLTRIM(CEMPANT)=="02")) .and. !(Alltrim(__CUSERID) $ _cUsuarios) //por Adriana chamado 035702 em 20/06/17 // @history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
 	IF (AllTrim(SM0->M0_CODFIL) <> '03' .and. (ALLTRIM(CEMPANT)$_cEmpAt1  .or. ALLTRIM(CEMPANT)=="02")) .and. !(Alltrim(__CUSERID) $ _cUsuarios) //por Adriana chamado 035702 em 20/06/17 // @history Ticket TI - 28/02/2023 - Fernando Macieira - Ajustes estabilização pos golive migração dicionário dados
 

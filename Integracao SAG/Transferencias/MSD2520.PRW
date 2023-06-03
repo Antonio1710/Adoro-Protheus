@@ -11,13 +11,14 @@
 	@history ticket TI - Antonio Domingos    - 13/05/2023 - Ajuste Nova Empresa
     @history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
 	@history ticket TI - Antonio Domingos - 26/05/2023 - Revisão Ajuste Nova Empresa
-    /*/
+    @history ticket TI - Antonio Domingos - 02/06/2023 - Validação Ajuste Nova Empresa
+	/*/
 User Function MSD2520
-	Private _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1
+	Local _cEmpAt1 := SuperGetMv("MV_#EMPAT1",.F.,"01/13") //Codigo de Empresas Ativas Grupo 1
 
 	IF !Empty(Alltrim(SD2->D2_PEDIDO)) // @history 058172 - Abel Babini - 22/06/2020 - Permitir a exclusão de NF emitidas pelo módulo do Ativo Fixo.
 		//ticket TI - Antonio Domingos    - 13/05/2023
-		If cEmpAnt $ _cEmpAt1 //Valida apenas para empresa 01-Adoro //Incluido por Adriana chamado 025947
+		If alltrim(cEmpAnt) $ _cEmpAt1 //Valida apenas para empresa 01-Adoro //Incluido por Adriana chamado 025947
 			
 			MSD2_1() // ponto de entrada ja existente na base de dados da Adoro
 			
@@ -35,7 +36,7 @@ Return()
 Static Function MSD2_1()
 	//Local cFilSF:= GetMv("MV_#SFFIL",,"02|0B|") 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
 	//Local cEmpSF:= GetMv("MV_#SFEMP",,"01|") 		//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
-	Private _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigo de Empresas+Filiais Ativas Grupo 3
+	Local _cEmpFL3 := SuperGetMv("MV_#EMPFL3",.F.,"0102/010B/1301") //Codigo de Empresas+Filiais Ativas Grupo 3
 	
 	// EXECUTADO NA EXCLUSAO DA NOTA
 	//Ticket 69574   - Abel Babini          - 21/03/2022 - Projeto FAI
